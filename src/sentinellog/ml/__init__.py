@@ -1,14 +1,10 @@
-"""ML scoring is deferred. Milestone 1 does not train or score models."""
+"""Experimental anomaly detection over stored log events.
 
-from fastapi import APIRouter
+Scores live in anomaly_scores. They are not written to security_alerts.
+There is no ground truth on Linux_2k, so this package does not report
+precision, recall, F1, or ROC-AUC.
+"""
 
-router = APIRouter(prefix="/ml", tags=["ml"])
+from sentinellog.ml.routes import router
 
-
-@router.get("/status")
-def ml_status() -> dict[str, object]:
-    return {
-        "module": "ml",
-        "implemented": False,
-        "detail": "Model training and scoring are deferred.",
-    }
+__all__ = ["router"]

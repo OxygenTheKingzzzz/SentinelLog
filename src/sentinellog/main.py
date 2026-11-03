@@ -20,7 +20,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="SentinelLog",
         version=__version__,
-        summary="Milestone 2: rule-based detection over stored Linux syslog.",
+        summary="Milestone 3: experimental anomaly detection over stored Linux syslog.",
     )
     app.include_router(root_router)
     app.include_router(api_router)

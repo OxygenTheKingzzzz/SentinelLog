@@ -2,8 +2,8 @@
 
 Milestone 1 writes log sources, ingestion jobs, templates, events, parse errors,
 and audit rows. Milestone 2 evaluates detection_rules and writes security_alerts
-from stored log_events. investigations stay empty until a later milestone.
-Alerts are rule findings, not confirmed incidents.
+from stored log_events. Milestone 3 writes anomaly_models and anomaly_scores.
+Those scores are not rule alerts and are not ground truth. investigations stay empty.
 """
 
 import uuid
@@ -14,6 +14,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
+    Double,
     ForeignKey,
     Index,
     Integer,
@@ -420,4 +421,157 @@ class AuditLog(Base):
     __table_args__ = (
         Index("ix_audit_logs_created_at", "created_at"),
         Index("ix_audit_logs_action", "action"),
+    )
+
+
+class AnomalyModel(Base):
+    """A trained anomaly model. Scores from this row are not security_alerts."""
+
+    __tablename__ = "anomaly_models"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    algorithm: Mapped[str] = mapped_column(String(64), nullable=False)
+    window_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
+    window_type: Mapped[str] = mapped_column(String(16), nullable=False)
+    train_fraction: Mapped[float] = mapped_column(Double, nullable=False)
+    n_train: Mapped[int] = mapped_column(Integer, nullable=False)
+    n_validation: Mapped[int] = mapped_column(Integer, nullable=False)
+    baseline_z_threshold: Mapped[float] = mapped_column(Double, nullable=False)
+    isolation_score_threshold: Mapped[float] = mapped_column(Double, nullable=False)
+    feature_names: Mapped[list] = mapped_column(JSONB, nullable=False)
+    feature_medians: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    feature_mads: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    feature_scales: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    feature_scale_kinds: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    template_ids: Mapped[list] = mapped_column(JSONB, nullable=False)
+    component_names: Mapped[list] = mapped_column(JSONB, nullable=False)
+    hyperparameters: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    validation_summary: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    train_windows: Mapped[list] = mapped_column(JSONB, nullable=False)
+    validation_windows: Mapped[list] = mapped_column(JSONB, nullable=False)
+    dropped_features: Mapped[list] = mapped_column(JSONB, nullable=False)
+    artifact_path: Mapped[str] = mapped_column(Text, nullable=False)
+    artifact_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    sklearn_version: Mapped[str] = mapped_column(String(32), nullable=False)
+    disclaimer: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("version", name="uq_anomaly_models_version"),
+        CheckConstraint("version >= 1", name="ck_anomaly_models_version"),
+        CheckConstraint("window_seconds >= 1", name="ck_anomaly_models_window_seconds"),
+        CheckConstraint("window_type = 'tumbling'", name="ck_anomaly_models_window_type"),
+        CheckConstraint("n_train >= 1", name="ck_anomaly_models_n_train"),
+        CheckConstraint("n_validation >= 1", name="ck_anomaly_models_n_validation"),
+        CheckConstraint(
+            "train_fraction > 0 AND train_fraction < 1",
+            name="ck_anomaly_models_train_fraction",
+        ),
+        CheckConstraint(
+            "baseline_z_threshold > 0",
+            name="ck_anomaly_models_baseline_z_threshold",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(feature_names) = 'array'",
+            name="ck_anomaly_models_feature_names_array",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(feature_medians) = 'object'",
+            name="ck_anomaly_models_feature_medians_object",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(feature_mads) = 'object'",
+            name="ck_anomaly_models_feature_mads_object",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(feature_scales) = 'object'",
+            name="ck_anomaly_models_feature_scales_object",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(feature_scale_kinds) = 'object'",
+            name="ck_anomaly_models_feature_scale_kinds_object",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(template_ids) = 'array'",
+            name="ck_anomaly_models_template_ids_array",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(component_names) = 'array'",
+            name="ck_anomaly_models_component_names_array",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(hyperparameters) = 'object'",
+            name="ck_anomaly_models_hyperparameters_object",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(validation_summary) = 'object'",
+            name="ck_anomaly_models_validation_summary_object",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(train_windows) = 'array'",
+            name="ck_anomaly_models_train_windows_array",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(validation_windows) = 'array'",
+            name="ck_anomaly_models_validation_windows_array",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(dropped_features) = 'array'",
+            name="ck_anomaly_models_dropped_features_array",
+        ),
+        CheckConstraint(
+            "artifact_sha256 ~ '^[0-9a-f]{64}$'",
+            name="ck_anomaly_models_sha",
+        ),
+        Index("ix_anomaly_models_created_at", "created_at"),
+    )
+
+
+class AnomalyScore(Base):
+    """One window scored by an anomaly model. This is not a security_alerts row."""
+
+    __tablename__ = "anomaly_scores"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    model_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("anomaly_models.id", ondelete="CASCADE"), nullable=False
+    )
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("log_sources.id", ondelete="CASCADE"), nullable=False
+    )
+    window_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    window_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    event_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    split_role: Mapped[str] = mapped_column(String(32), nullable=False)
+    features: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    isolation_score: Mapped[float] = mapped_column(Double, nullable=False)
+    baseline_score: Mapped[float] = mapped_column(Double, nullable=False)
+    flagged_isolation: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    flagged_baseline: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    explanation: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("model_id", "source_id", "window_start", name="uq_anomaly_scores_window"),
+        CheckConstraint("event_count >= 0", name="ck_anomaly_scores_event_count"),
+        CheckConstraint(
+            "split_role IN ('train','validation','new')",
+            name="ck_anomaly_scores_split_role",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(features) = 'object'",
+            name="ck_anomaly_scores_features_object",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(explanation) = 'object'",
+            name="ck_anomaly_scores_explanation_object",
+        ),
+        Index("ix_anomaly_scores_model_id", "model_id"),
+        Index("ix_anomaly_scores_source_id", "source_id"),
+        Index("ix_anomaly_scores_window_start", "window_start"),
     )

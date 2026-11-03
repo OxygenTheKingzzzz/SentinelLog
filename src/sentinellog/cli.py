@@ -1,4 +1,4 @@
-"""Command line import, timestamp backfill, detection, and a local API server."""
+"""Command line import, backfill, detection, anomaly scoring, and the API server."""
 
 import argparse
 import json
@@ -171,6 +171,60 @@ def _backfill(args: argparse.Namespace) -> int:
     return 0
 
 
+def _anomaly_train(args: argparse.Namespace) -> int:
+    configure_logging(get_settings().log_level)
+    session = SessionLocal()
+    try:
+        source_id = None
+        if args.source_name is not None:
+            source = _source_by_name(session, args.source_name)
+            if source is None:
+                print("source not found", file=sys.stderr)
+                return 2
+            source_id = source.id
+        from sentinellog.ml.schemas import model_out
+        from sentinellog.ml.service import train_model
+
+        record = train_model(session, source_id=source_id, actor="cli")
+        payload = model_out(record).model_dump(mode="json")
+    finally:
+        session.close()
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _anomaly_score(args: argparse.Namespace) -> int:
+    configure_logging(get_settings().log_level)
+    session = SessionLocal()
+    try:
+        source = _source_by_name(session, args.source_name)
+        if source is None:
+            print("source not found", file=sys.stderr)
+            return 2
+        from sentinellog.ml.constants import NO_GROUND_TRUTH
+        from sentinellog.ml.service import score_source
+
+        record, windows = score_source(
+            session,
+            source_id=source.id,
+            model_id=None,
+            actor="cli",
+        )
+        payload = {
+            "model_id": str(record.id),
+            "model_version": record.version,
+            "source_id": str(source.id),
+            "windows": windows,
+            "ground_truth": False,
+            "metrics": None,
+            "metrics_note": NO_GROUND_TRUTH,
+        }
+    finally:
+        session.close()
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
 def _detect(args: argparse.Namespace) -> int:
     configure_logging(get_settings().log_level)
     session = SessionLocal()
@@ -211,6 +265,17 @@ def main(argv: list[str] | None = None) -> int:
     detect_parser = sub.add_parser("detect", help="run enabled detection rules")
     detect_parser.add_argument("--source-name", default=None)
 
+    train_parser = sub.add_parser(
+        "anomaly-train",
+        help="train an Isolation Forest and robust-z baseline; does not write alerts",
+    )
+    train_parser.add_argument("--source-name", default=None)
+    score_parser = sub.add_parser(
+        "anomaly-score",
+        help="score one source with the latest anomaly model",
+    )
+    score_parser.add_argument("--source-name", required=True)
+
     serve = sub.add_parser("serve", help="run the HTTP API")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
@@ -222,6 +287,10 @@ def main(argv: list[str] | None = None) -> int:
         return _backfill(args)
     if args.command == "detect":
         return _detect(args)
+    if args.command == "anomaly-train":
+        return _anomaly_train(args)
+    if args.command == "anomaly-score":
+        return _anomaly_score(args)
     if args.command == "serve":
         import uvicorn
 

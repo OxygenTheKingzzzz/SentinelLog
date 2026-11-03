@@ -77,7 +77,14 @@ def test_api_ingests_real_files_and_dedups(client):
     detection = client.get("/api/v1/detection/status")
     assert detection.status_code == 200
     assert detection.json()["implemented"] is True
-    for path in ("/ml", "/incidents", "/reports", "/live"):
+    ml = client.get("/api/v1/ml/status")
+    assert ml.status_code == 200
+    ml_body = ml.json()
+    assert ml_body["implemented"] is True
+    assert ml_body["ground_truth"] is False
+    assert ml_body["metrics"] is None
+    assert "ROC-AUC are not computed" in ml_body["metrics_note"]
+    for path in ("/incidents", "/reports", "/live"):
         status = client.get(f"/api/v1{path}/status")
         assert status.status_code == 200
         assert status.json()["implemented"] is False

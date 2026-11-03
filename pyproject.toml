@@ -1,7 +1,7 @@
 [project]
 name = "sentinellog"
-version = "0.2.0"
-description = "Local SOC / Linux log intelligence platform. Milestone 2 adds rule-based detection."
+version = "0.3.0"
+description = "Local SOC / Linux log intelligence platform. Milestone 3 adds experimental anomaly detection."
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.14",
@@ -11,6 +11,7 @@ dependencies = [
     "pydantic-settings>=2.6",
     "python-dotenv>=1.0",
     "python-multipart>=0.0.12",
+    "scikit-learn>=1.5",
     "sqlalchemy>=2.0.36",
     "uvicorn>=0.32",
 ]
@@ -43,6 +44,7 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.ruff.lint.per-file-ignores]
 "src/sentinellog/api/routes.py" = ["B008"]
 "src/sentinellog/detection/routes.py" = ["B008"]
+"src/sentinellog/ml/routes.py" = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

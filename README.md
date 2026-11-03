@@ -46,6 +46,8 @@ export DATABASE_URL=postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/
 alembic upgrade head
 python -m sentinellog.cli import-bundled
 python -m sentinellog.cli detect --source-name linux-2k
+python -m sentinellog.cli anomaly-train --source-name linux-2k
+python -m sentinellog.cli anomaly-score --source-name linux-2k
 python -m sentinellog.cli serve
 ```
 
@@ -63,6 +65,8 @@ export DATABASE_URL=postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/
 alembic upgrade head
 python -m sentinellog.cli import-bundled
 python -m sentinellog.cli detect --source-name linux-2k
+python -m sentinellog.cli anomaly-train --source-name linux-2k
+python -m sentinellog.cli anomaly-score --source-name linux-2k
 export SENTINELLOG_TEST_DATABASE_URL=postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/sentinellog_test
 pytest
 ruff check src tests
@@ -88,6 +92,9 @@ Copy `.env.example` to `.env` for local defaults. Do not commit `.env`.
 - `POST /api/v1/detection/run?source_id=` optional source; omit it to run every source
 - `GET /api/v1/alerts` filters: `severity`, `status`, `rule` (name or id), `source_id`
 - `POST /api/v1/alerts/{id}/status` with `status` and a non-empty `note`
+- `POST /api/v1/ml/train` and `POST /api/v1/ml/score` (optional `source_id` / required `source_id`)
+- `GET /api/v1/ml/models`, `GET /api/v1/ml/models/latest`, `GET /api/v1/ml/models/{id}`
+- `GET /api/v1/ml/scores` filters: `source_id`, `model_id`, `flagged` (`isolation`, `baseline`, or `either`)
 - `GET /health`
 
 `occurred_from` / `occurred_to` apply to `event_timestamp`, which is null until a year is configured or backfilled. `month` and `day` filter the syslog calendar fields without a year.
@@ -96,13 +103,14 @@ Alert lifecycle values are `open`, `investigating`, `resolved`, and `false_posit
 
 Uploads are size-limited (`MAX_UPLOAD_BYTES`, default 32 MiB), must be UTF-8 text without NUL bytes, and must use an allowed extension. Filenames that contain a path or `..` are rejected. Log bytes are stored and parsed. They are not executed and are not passed to a shell.
 
-`GET /api/v1/detection/status` reports that the rule engine is implemented. `/ml`, `/incidents`, `/reports`, and `/live` still report that those modules are not implemented.
+`GET /api/v1/detection/status` reports that the rule engine is implemented. `GET /api/v1/ml/status` reports that anomaly scoring is implemented and that the dataset has no ground truth (`metrics` is null). `/incidents`, `/reports`, and `/live` still report that those modules are not implemented. Anomaly scores are stored in `anomaly_scores`, not in `security_alerts`.
 
 ## Layout
 
 - `src/sentinellog/ingestion/` parsing, template match, validation, jobs
 - `src/sentinellog/normalization/` timestamps, optional IP/username, search and quality queries
 - `src/sentinellog/detection/` builtin rules, tumbling and sliding windows, backfill, alert lifecycle
-- Package boundaries only: `ml`, `incidents`, `reports`, `live`
+- `src/sentinellog/ml/` hourly features, Isolation Forest, robust-z baseline, model artifacts
+- Package boundaries only: `incidents`, `reports`, `live`
 
-Tables are created by Alembic. Revision `6a757cd7ca97` is the initial schema. Revision `ed1cc76d8439` adds rule versions, alert evidence, the four-status lifecycle, and `alert_notes`. `investigations` and `investigation_events` stay empty.
+Tables are created by Alembic. Revision `6a757cd7ca97` is the initial schema. Revision `ed1cc76d8439` adds rule versions, alert evidence, the four-status lifecycle, and `alert_notes`. Revision `c4e8b1a09d27` adds `anomaly_models` and `anomaly_scores`. `investigations` and `investigation_events` stay empty.

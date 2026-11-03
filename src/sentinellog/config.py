@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     source_year: int | None = None
     max_upload_bytes: int = 33_554_432
     log_level: str = "INFO"
+    anomaly_artifact_dir: str = "var/anomaly-models"
 
     model_config = SettingsConfigDict(
         env_file=".env",
