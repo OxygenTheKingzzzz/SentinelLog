@@ -26,6 +26,7 @@ from sentinellog.risk.service import (
     list_models,
     list_predictions,
     published_experiments,
+    realistic_experiments,
     set_label,
     train_bands,
     train_labeled,
@@ -54,6 +55,11 @@ def risk_status(db: Session = Depends(get_db)) -> dict[str, object]:
 @router.get("/experiments")
 def risk_experiments() -> dict[str, object]:
     return published_experiments()
+
+
+@router.get("/realistic")
+def risk_realistic() -> dict[str, object]:
+    return realistic_experiments()
 
 
 @router.get("/distribution")

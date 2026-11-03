@@ -1,0 +1,4766 @@
+{
+  "generated_at": "2026-11-03T11:47:44Z",
+  "generator": "sentinellog.risk.realistic",
+  "seed": 42,
+  "preserved_benchmark": "src/sentinellog/risk/published_results.json",
+  "protocol": "Template groups are assigned to train, validation, and test before sampling, feature fitting, or threshold selection. Row caps are uniform inside one side, so they keep that side's anomaly prevalence. The validation side chooses the threshold. The test side is scored once. Hyperparameters stay at the benchmark values.",
+  "experiments": [
+    {
+      "dataset": "bgl",
+      "dataset_version": "loghub-zenodo-8196385-BGL.zip",
+      "source_url": "https://zenodo.org/records/8196385/files/BGL.zip?download=1",
+      "file_sha256": "d67fd82a711aea0157a9b83175892c6ee60e384a2ddf5bc51f39118453816da8",
+      "label_unit": "line",
+      "label_provenance": "dataset_native",
+      "label_definition": "The first whitespace-separated token is the published BGL alert label. '-' is normal. That token is removed before the template and the features.",
+      "population": {
+        "parsed": 4713493,
+        "skipped": 34470,
+        "rows_seen": 4747963,
+        "normal": 4365033,
+        "anomaly": 348460,
+        "prevalence": 0.07392818871270203,
+        "template_groups": 47160
+      },
+      "leakage": {
+        "alert_token_in_message_body": 0,
+        "anomaly_rows": 348460,
+        "identifier_in_features": 0,
+        "severity_prevalence": [
+          {
+            "severity_rank": 0,
+            "normal": 3359257,
+            "anomaly": 0,
+            "prevalence": 0.0
+          },
+          {
+            "severity_rank": 1,
+            "normal": 23322,
+            "anomaly": 0,
+            "prevalence": 0.0
+          },
+          {
+            "severity_rank": 2,
+            "normal": 309002,
+            "anomaly": 0,
+            "prevalence": 0.0
+          },
+          {
+            "severity_rank": 3,
+            "normal": 673452,
+            "anomaly": 348460,
+            "prevalence": 0.3409882651343756
+          }
+        ],
+        "features_available": [
+          "component, level word, and message text",
+          "severity rank from the level word and keywords",
+          "hour sine and cosine",
+          "template and component rarity fit on the training rows only"
+        ],
+        "features_excluded": [
+          "alert token",
+          "node name",
+          "raw unix timestamp",
+          "line number"
+        ]
+      },
+      "positive_template_groups": 2285,
+      "mixed_label_groups": 1,
+      "protocols": [
+        {
+          "name": "realistic_group",
+          "meaningful": true,
+          "reason": "Template groups were assigned with stratification on the majority label before any sampling. Each group is in train, validation, or test only.",
+          "stratified": true,
+          "full_split": {
+            "train": {
+              "groups": 28296,
+              "normal": 2706236,
+              "anomaly": 281213,
+              "rows": 2987449,
+              "prevalence": 0.09413148140771609
+            },
+            "validation": {
+              "groups": 9432,
+              "normal": 456812,
+              "anomaly": 14898,
+              "rows": 471710,
+              "prevalence": 0.031582964109304446
+            },
+            "test": {
+              "groups": 9432,
+              "normal": 1201985,
+              "anomaly": 52349,
+              "rows": 1254334,
+              "prevalence": 0.04173449814802118
+            },
+            "population": {
+              "groups": 47160,
+              "normal": 4365033,
+              "anomaly": 348460,
+              "rows": 4713493,
+              "prevalence": 0.07392818871270203
+            }
+          },
+          "evaluated_rows": {
+            "train": {
+              "rows": 20000,
+              "normal": 18114,
+              "anomaly": 1886,
+              "prevalence": 0.0943,
+              "groups": 1410
+            },
+            "validation": {
+              "rows": 8000,
+              "normal": 7786,
+              "anomaly": 214,
+              "prevalence": 0.02675,
+              "groups": 830
+            },
+            "test": {
+              "rows": 20000,
+              "normal": 19194,
+              "anomaly": 806,
+              "prevalence": 0.0403,
+              "groups": 822
+            }
+          },
+          "span_overlap": null,
+          "anomaly_bearing_groups": 2285,
+          "anomaly_group_placement": {
+            "validation": 457,
+            "train": 1371,
+            "test": 457
+          },
+          "near_duplicates": {
+            "train_groups": 28296,
+            "test_groups": 9432,
+            "exact_group_overlap": 0,
+            "jaccard_at_least_0_8": 8,
+            "jaccard_at_least_0_5": 6640,
+            "median_max_jaccard": 0.7142857142857143,
+            "p95_max_jaccard": 0.8888888888888888,
+            "examples": [
+              {
+                "test_group": "kernel info iar 0014a150 dear 00a79028",
+                "train_group": "kernel info iar 0014a150 dear <*>",
+                "jaccard": 0.8333333333333334
+              },
+              {
+                "test_group": "discovery info ido chip status changed: ff:f2:9f:<*>:7d:4d:<*>:0d:<*>:ea:<*>:b2 ip=<*> v=<*> t=<*> status=m sat sep <*> <*>:<*>:<*> pdt <*>",
+                "train_group": "discovery info ido chip status changed: ff:f2:9f:<*>:7e:d7:<*>:0d:<*>:ea:<*>:<*> ip=<*> v=<*> t=<*> status=m sat sep <*> <*>:<*>:<*> pdt <*>",
+                "jaccard": 0.875
+              },
+              {
+                "test_group": "kernel fatal <*>:<*> <*>:1eeeeeee <*>:ffffffff <*>:0004322d",
+                "train_group": "kernel fatal <*>:<*> <*>:1eeeeeee <*>:ffffffff <*>:ffffffff",
+                "jaccard": 0.8333333333333334
+              },
+              {
+                "test_group": "discovery info node card vpd check: u01 node in processor card slot j13 do not match. vpd ecid 075c0d52212fffff03061af0cad0, found <*>",
+                "train_group": "discovery info node card vpd check: u01 node in processor card slot j13 do not match. vpd ecid 07510d44552fffff030d1a80d8cb, found <*>",
+                "jaccard": 0.8888888888888888
+              },
+              {
+                "test_group": "discovery info ido chip status changed: ff:f2:9f:<*>:c4:1d:<*>:0d:<*>:e9:3b:e2 ip=<*> v=<*> t=<*> status=m thu aug <*> <*>:<*>:<*> pdt <*>",
+                "train_group": "discovery info ido chip status changed: ff:f2:9f:<*>:c4:1d:<*>:0d:<*>:e9:3b:e2 ip=<*> v=<*> t=<*> status=m tue aug <*> <*>:<*>:<*> pdt <*>",
+                "jaccard": 0.875
+              },
+              {
+                "test_group": "kernel info iar 0014a150 dear 007c2268",
+                "train_group": "kernel info iar 0014a150 dear <*>",
+                "jaccard": 0.8333333333333334
+              },
+              {
+                "test_group": "discovery info ido chip status changed: ff:f2:9f:<*>:c6:<*>:<*>:0d:<*>:e9:<*>:ef ip=<*> v=<*> t=<*> status=m thu aug <*> <*>:<*>:<*> pdt <*>",
+                "train_group": "discovery info ido chip status changed: ff:f2:9f:<*>:c6:<*>:<*>:0d:<*>:e9:<*>:ef ip=<*> v=<*> t=<*> status=m tue aug <*> <*>:<*>:<*> pdt <*>",
+                "jaccard": 0.875
+              },
+              {
+                "test_group": "discovery info node card vpd check: u11 node in processor card slot j13 do not match. vpd ecid 04c480d7da2fffff03071a70d4ca, found 07501026412fffff06051af090d5",
+                "train_group": "discovery info node card vpd check: u11 node in processor card slot j13 do not match. vpd ecid 075904e1017bffff03041ab104cc, found <*>",
+                "jaccard": 0.8421052631578947
+              }
+            ],
+            "method": "Token Jaccard between each test template and train templates that share a rare token. Tokens present in more than 2% of train templates are ignored as candidates. A score of 0.8 or more is treated as a near-duplicate."
+          },
+          "models": [
+            {
+              "algorithm": "isolation_forest",
+              "score_kind": "anomaly_score",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 20000,
+              "n_validation": 8000,
+              "n_test": 20000,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.007075059796915362,
+                "validation_f1": 0.425233644859813,
+                "validation_precision": 0.4252336448598131,
+                "validation_recall": 0.4252336448598131,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.007075059796915362
+              },
+              "default_threshold_value": 0.0,
+              "operating_point": {
+                "accuracy": 0.95095,
+                "precision_macro": 0.5905833296180036,
+                "recall_macro": 0.5358535196715475,
+                "f1_macro": 0.5482625826657025,
+                "precision_weighted": 0.9325392763093109,
+                "recall_weighted": 0.95095,
+                "f1_weighted": 0.9403939299062396,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9625171415511199,
+                    "recall": 0.9873397936855267,
+                    "f1": 0.9747704652418795,
+                    "support": 19194
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.21864951768488747,
+                    "recall": 0.08436724565756824,
+                    "f1": 0.12175470008952552,
+                    "support": 806
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18951,
+                      243
+                    ],
+                    [
+                      738,
+                      68
+                    ]
+                  ]
+                },
+                "roc_auc": 0.7047702949975838,
+                "pr_auc": 0.13905710440815708,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.21864951768488747,
+                "recall": 0.08436724565756824,
+                "f1": 0.12175470008952552,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 12.660206314473273,
+                "threshold": 0.007075059796915362,
+                "prevalence": 0.0403
+              },
+              "default_threshold": {
+                "accuracy": 0.94735,
+                "precision_macro": 0.5766165963349781,
+                "recall_macro": 0.538732314249361,
+                "f1_macro": 0.5494992029066499,
+                "precision_weighted": 0.9316340854815472,
+                "recall_weighted": 0.94735,
+                "f1_weighted": 0.9387346621752065,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9627570021937656,
+                    "recall": 0.9831718245284985,
+                    "f1": 0.9728573269751256,
+                    "support": 19194
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.19047619047619047,
+                    "recall": 0.09429280397022333,
+                    "f1": 0.12614107883817427,
+                    "support": 806
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18871,
+                      323
+                    ],
+                    [
+                      730,
+                      76
+                    ]
+                  ]
+                },
+                "roc_auc": 0.7047702949975838,
+                "pr_auc": 0.13905710440815708,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.19047619047619047,
+                "recall": 0.09429280397022333,
+                "f1": 0.12614107883817427,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 16.82817547150151,
+                "threshold": 0.0,
+                "prevalence": 0.0403
+              },
+              "calibration": {
+                "ece": 0.017481583113429157,
+                "brier": 0.03827104541257899,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 20000,
+                    "mean_predicted": 0.022818416886570846,
+                    "observed_frequency": 0.0403
+                  }
+                ],
+                "note": "Platt scaling was fit on validation scores only. The raw Isolation Forest score is not a class probability."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 4083,
+                "n_test": 15635,
+                "metrics_status": "evaluated",
+                "metrics_note": null,
+                "metrics": {
+                  "accuracy": 0.971730092740646,
+                  "precision_macro": 0.9581503851728101,
+                  "recall_macro": 0.5670614794454124,
+                  "f1_macro": 0.6104464853841967,
+                  "precision_weighted": 0.9709691873007853,
+                  "recall_weighted": 0.971730092740646,
+                  "f1_weighted": 0.9613165252575685,
+                  "per_class": [
+                    {
+                      "label": "normal",
+                      "precision": 0.9718563259011759,
+                      "recall": 0.9997356071121687,
+                      "f1": 0.9855988531213346,
+                      "support": 15129
+                    },
+                    {
+                      "label": "anomaly",
+                      "precision": 0.9444444444444444,
+                      "recall": 0.13438735177865613,
+                      "f1": 0.23529411764705882,
+                      "support": 506
+                    }
+                  ],
+                  "confusion_matrix": {
+                    "labels": [
+                      "normal",
+                      "anomaly"
+                    ],
+                    "matrix": [
+                      [
+                        15125,
+                        4
+                      ],
+                      [
+                        438,
+                        68
+                      ]
+                    ]
+                  },
+                  "roc_auc": 0.6547584057735882,
+                  "pr_auc": 0.21718001058553632,
+                  "roc_auc_note": null,
+                  "pr_auc_note": null,
+                  "support": 15635,
+                  "precision": 0.9444444444444444,
+                  "recall": 0.13438735177865613,
+                  "f1": 0.23529411764705882,
+                  "positive_label": "anomaly",
+                  "fp_per_1000_normal": 0.2643928878313173,
+                  "threshold": 0.007075059796915362,
+                  "prevalence": 0.032363287496002556
+                },
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "random_forest",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 20000,
+              "n_validation": 8000,
+              "n_test": 20000,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.3375,
+                "validation_f1": 0.8899297423887588,
+                "validation_precision": 0.892018779342723,
+                "validation_recall": 0.8878504672897196,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.3375
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.98165,
+                "precision_macro": 0.9895099065922874,
+                "recall_macro": 0.7729268037907835,
+                "f1_macro": 0.8481117151165118,
+                "precision_weighted": 0.9819501219694723,
+                "recall_weighted": 0.98165,
+                "f1_weighted": 0.9790508705816418,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9812873868807199,
+                    "recall": 0.9999479003855372,
+                    "f1": 0.9905297654375145,
+                    "support": 19194
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9977324263038548,
+                    "recall": 0.5459057071960298,
+                    "f1": 0.7056936647955092,
+                    "support": 806
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      19193,
+                      1
+                    ],
+                    [
+                      366,
+                      440
+                    ]
+                  ]
+                },
+                "roc_auc": 0.9426221645463546,
+                "pr_auc": 0.6422199722628639,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.9977324263038548,
+                "recall": 0.5459057071960298,
+                "f1": 0.7056936647955092,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.052099614462852974,
+                "threshold": 0.3375,
+                "prevalence": 0.0403
+              },
+              "default_threshold": {
+                "accuracy": 0.97825,
+                "precision_macro": 0.9889194559070762,
+                "recall_macro": 0.7301488833746899,
+                "f1_macro": 0.809605807206709,
+                "precision_weighted": 0.9787320036680421,
+                "recall_weighted": 0.97825,
+                "f1_weighted": 0.9743526284935938,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9778389118141525,
+                    "recall": 1.0,
+                    "f1": 0.9887953017541148,
+                    "support": 19194
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 1.0,
+                    "recall": 0.46029776674937967,
+                    "f1": 0.6304163126593033,
+                    "support": 806
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      19194,
+                      0
+                    ],
+                    [
+                      435,
+                      371
+                    ]
+                  ]
+                },
+                "roc_auc": 0.9426221645463546,
+                "pr_auc": 0.6422199722628639,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 1.0,
+                "recall": 0.46029776674937967,
+                "f1": 0.6304163126593033,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0,
+                "threshold": 0.5,
+                "prevalence": 0.0403
+              },
+              "calibration": {
+                "ece": 0.008317500000000002,
+                "brier": 0.018307796875000004,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 16873,
+                    "mean_predicted": 0.0024839981034789306,
+                    "observed_frequency": 0.005748829490902625
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "count": 2680,
+                    "mean_predicted": 0.12042910447761195,
+                    "observed_frequency": 0.1003731343283582
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.30000000000000004,
+                    "count": 6,
+                    "mean_predicted": 0.26249999999999996,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.30000000000000004,
+                    "upper": 0.4,
+                    "count": 1,
+                    "mean_predicted": 0.375,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "count": 69,
+                    "mean_predicted": 0.44329710144927537,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6000000000000001,
+                    "count": 1,
+                    "mean_predicted": 0.5375,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1.0,
+                    "count": 370,
+                    "mean_predicted": 0.9548986486486486,
+                    "observed_frequency": 1.0
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 4083,
+                "n_test": 15635,
+                "metrics_status": "evaluated",
+                "metrics_note": null,
+                "metrics": {
+                  "accuracy": 0.9765909817716661,
+                  "precision_macro": 0.9881897386253631,
+                  "recall_macro": 0.6383399209486166,
+                  "f1_macro": 0.7107425609247164,
+                  "precision_weighted": 0.9771439150192667,
+                  "recall_weighted": 0.9765909817716661,
+                  "f1_weighted": 0.9700995198976263,
+                  "per_class": [
+                    {
+                      "label": "normal",
+                      "precision": 0.976379477250726,
+                      "recall": 1.0,
+                      "f1": 0.9880485893416928,
+                      "support": 15129
+                    },
+                    {
+                      "label": "anomaly",
+                      "precision": 1.0,
+                      "recall": 0.2766798418972332,
+                      "f1": 0.43343653250773995,
+                      "support": 506
+                    }
+                  ],
+                  "confusion_matrix": {
+                    "labels": [
+                      "normal",
+                      "anomaly"
+                    ],
+                    "matrix": [
+                      [
+                        15129,
+                        0
+                      ],
+                      [
+                        366,
+                        140
+                      ]
+                    ]
+                  },
+                  "roc_auc": 0.9946653117837454,
+                  "pr_auc": 0.9133618079429234,
+                  "roc_auc_note": null,
+                  "pr_auc_note": null,
+                  "support": 15635,
+                  "precision": 1.0,
+                  "recall": 0.2766798418972332,
+                  "f1": 0.43343653250773995,
+                  "positive_label": "anomaly",
+                  "fp_per_1000_normal": 0.0,
+                  "threshold": 0.3375,
+                  "prevalence": 0.032363287496002556
+                },
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "tfidf_logreg",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 20000,
+              "n_validation": 8000,
+              "n_test": 20000,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.9245256830567015,
+                "validation_f1": 0.9326683291770573,
+                "validation_precision": 1.0,
+                "validation_recall": 0.8738317757009346,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.9245256830567015
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.97805,
+                "precision_macro": 0.9888198441399685,
+                "recall_macro": 0.7276674937965261,
+                "f1_macro": 0.8072196927674735,
+                "precision_weighted": 0.9785408088422554,
+                "recall_weighted": 0.97805,
+                "f1_weighted": 0.9740666513584171,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9776396882799369,
+                    "recall": 1.0,
+                    "f1": 0.9886934349808123,
+                    "support": 19194
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 1.0,
+                    "recall": 0.45533498759305213,
+                    "f1": 0.6257459505541347,
+                    "support": 806
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      19194,
+                      0
+                    ],
+                    [
+                      439,
+                      367
+                    ]
+                  ]
+                },
+                "roc_auc": 0.9991012493306556,
+                "pr_auc": 0.9831575681722087,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 1.0,
+                "recall": 0.45533498759305213,
+                "f1": 0.6257459505541347,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0,
+                "threshold": 0.9245256830567015,
+                "prevalence": 0.0403
+              },
+              "default_threshold": {
+                "accuracy": 0.9814,
+                "precision_macro": 0.99049371358479,
+                "recall_macro": 0.7692307692307692,
+                "f1_macro": 0.8452012383900929,
+                "precision_weighted": 0.9817536338546459,
+                "recall_weighted": 0.9814,
+                "f1_weighted": 0.9786992569659444,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9809874271695799,
+                    "recall": 1.0,
+                    "f1": 0.9904024767801858,
+                    "support": 19194
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 1.0,
+                    "recall": 0.5384615384615384,
+                    "f1": 0.7,
+                    "support": 806
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      19194,
+                      0
+                    ],
+                    [
+                      372,
+                      434
+                    ]
+                  ]
+                },
+                "roc_auc": 0.9991012493306556,
+                "pr_auc": 0.9831575681722087,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 1.0,
+                "recall": 0.5384615384615384,
+                "f1": 0.7,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0,
+                "threshold": 0.5,
+                "prevalence": 0.0403
+              },
+              "calibration": {
+                "ece": 0.03183900394183276,
+                "brier": 0.00979495180709905,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 18975,
+                    "mean_predicted": 0.01986657319216031,
+                    "observed_frequency": 0.00010540184453227932
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "count": 150,
+                    "mean_predicted": 0.1309891753836066,
+                    "observed_frequency": 0.38
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.30000000000000004,
+                    "count": 134,
+                    "mean_predicted": 0.22142461778544995,
+                    "observed_frequency": 0.09701492537313433
+                  },
+                  {
+                    "lower": 0.30000000000000004,
+                    "upper": 0.4,
+                    "count": 306,
+                    "mean_predicted": 0.3712365304641693,
+                    "observed_frequency": 0.9803921568627451
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "count": 1,
+                    "mean_predicted": 0.4685378536913444,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.6000000000000001,
+                    "upper": 0.7000000000000001,
+                    "count": 1,
+                    "mean_predicted": 0.6671851908984536,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.7000000000000001,
+                    "upper": 0.8,
+                    "count": 66,
+                    "mean_predicted": 0.7443291151066236,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1.0,
+                    "count": 367,
+                    "mean_predicted": 0.989885347967346,
+                    "observed_frequency": 1.0
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 4083,
+                "n_test": 15635,
+                "metrics_status": "evaluated",
+                "metrics_note": null,
+                "metrics": {
+                  "accuracy": 0.9731371921969939,
+                  "precision_macro": 0.9864943083156473,
+                  "recall_macro": 0.5849802371541502,
+                  "f1_macro": 0.6384249739667303,
+                  "precision_weighted": 0.9738627937969209,
+                  "recall_weighted": 0.9731371921969939,
+                  "f1_weighted": 0.9637920395242086,
+                  "per_class": [
+                    {
+                      "label": "normal",
+                      "precision": 0.9729886166312947,
+                      "recall": 1.0,
+                      "f1": 0.9863094073929201,
+                      "support": 15129
+                    },
+                    {
+                      "label": "anomaly",
+                      "precision": 1.0,
+                      "recall": 0.16996047430830039,
+                      "f1": 0.2905405405405405,
+                      "support": 506
+                    }
+                  ],
+                  "confusion_matrix": {
+                    "labels": [
+                      "normal",
+                      "anomaly"
+                    ],
+                    "matrix": [
+                      [
+                        15129,
+                        0
+                      ],
+                      [
+                        420,
+                        86
+                      ]
+                    ]
+                  },
+                  "roc_auc": 0.9983615217430492,
+                  "pr_auc": 0.9652816200649887,
+                  "roc_auc_note": null,
+                  "pr_auc_note": null,
+                  "support": 15635,
+                  "precision": 1.0,
+                  "recall": 0.16996047430830039,
+                  "f1": 0.2905405405405405,
+                  "positive_label": "anomaly",
+                  "fp_per_1000_normal": 0.0,
+                  "threshold": 0.9245256830567015,
+                  "prevalence": 0.032363287496002556
+                },
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            }
+          ],
+          "baselines": [
+            {
+              "name": "severity_rank_only",
+              "detail": "Logistic regression on the severity rank alone. The level word is available to the text models.",
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.8751413731821369,
+                "validation_f1": 0.24854819976771192,
+                "validation_precision": 0.1419098143236074,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.8751413731821369
+              },
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "operating_point": {
+                "accuracy": 0.8299,
+                "precision_macro": 0.5957699619771863,
+                "recall_macro": 0.9113785557986871,
+                "f1_macro": 0.6121304525001066,
+                "precision_weighted": 0.9674190589353612,
+                "recall_weighted": 0.8299,
+                "f1_weighted": 0.8793362738952781,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 1.0,
+                    "recall": 0.8227571115973742,
+                    "f1": 0.9027611044417767,
+                    "support": 19194
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.19153992395437264,
+                    "recall": 1.0,
+                    "f1": 0.32149980055843635,
+                    "support": 806
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      15792,
+                      3402
+                    ],
+                    [
+                      0,
+                      806
+                    ]
+                  ]
+                },
+                "roc_auc": 0.9113785557986871,
+                "pr_auc": 0.19153992395437264,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.19153992395437264,
+                "recall": 1.0,
+                "f1": 0.32149980055843635,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 177.24288840262582,
+                "threshold": 0.8751413731821369,
+                "prevalence": 0.0403
+              },
+              "real_world": true
+            }
+          ]
+        },
+        {
+          "name": "chronological_group",
+          "meaningful": true,
+          "reason": "Each template is assigned by its earliest timestamp. Train is the earliest groups, validation the next block, and test the latest groups. A template that starts during training never appears in the test.",
+          "stratified": false,
+          "full_split": {
+            "train": {
+              "groups": 28296,
+              "normal": 3432527,
+              "anomaly": 282018,
+              "rows": 3714545,
+              "prevalence": 0.07592262309381095
+            },
+            "validation": {
+              "groups": 9432,
+              "normal": 265255,
+              "anomaly": 29472,
+              "rows": 294727,
+              "prevalence": 0.09999762492068931
+            },
+            "test": {
+              "groups": 9432,
+              "normal": 667251,
+              "anomaly": 36970,
+              "rows": 704221,
+              "prevalence": 0.05249772443593701
+            },
+            "population": {
+              "groups": 47160,
+              "normal": 4365033,
+              "anomaly": 348460,
+              "rows": 4713493,
+              "prevalence": 0.07392818871270203
+            }
+          },
+          "evaluated_rows": {
+            "train": {
+              "rows": 20000,
+              "normal": 18455,
+              "anomaly": 1545,
+              "prevalence": 0.07725,
+              "groups": 876
+            },
+            "validation": {
+              "rows": 8000,
+              "normal": 7177,
+              "anomaly": 823,
+              "prevalence": 0.102875,
+              "groups": 1405
+            },
+            "test": {
+              "rows": 20000,
+              "normal": 18936,
+              "anomaly": 1064,
+              "prevalence": 0.0532,
+              "groups": 1602
+            }
+          },
+          "span_overlap": {
+            "test_boundary": "2005-11-03T15:33:12.960184+00:00",
+            "train_groups_extending_into_test": 1486,
+            "note": "A train template can still emit lines after the first test template appears. Those later lines stay in train so the template is not copied into the test."
+          },
+          "anomaly_bearing_groups": 2285,
+          "anomaly_group_placement": {
+            "train": 690,
+            "validation": 1506,
+            "test": 89
+          },
+          "near_duplicates": {
+            "train_groups": 28296,
+            "test_groups": 9432,
+            "exact_group_overlap": 0,
+            "jaccard_at_least_0_8": 8,
+            "jaccard_at_least_0_5": 1340,
+            "median_max_jaccard": 0.0,
+            "p95_max_jaccard": 0.8235294117647058,
+            "examples": [
+              {
+                "test_group": "kernel info ciod: generated <*> core files for program /p/gb1/bmiller/caltech/bglcode/test/mdcask.opt",
+                "train_group": "kernel info ciod: generated <*> core files for program imb-mpi1.2kb",
+                "jaccard": 0.8
+              },
+              {
+                "test_group": "app fatal ciod: error loading ./ddcmdbglv: invalid or missing program image, no such file or directory",
+                "train_group": "app fatal ciod: error loading ./runtime_time: invalid or missing program image, no such file or directory",
+                "jaccard": 0.875
+              },
+              {
+                "test_group": "kernel info ciod: generated <*> core files for program ./ddcmdbglv1.<*>.<*>",
+                "train_group": "kernel info ciod: generated <*> core files for program imb-mpi1.2kb",
+                "jaccard": 0.8
+              },
+              {
+                "test_group": "kernel info ciod: generated <*> core files for program /p/gb1/kubota/nielsen1006a/makebglp",
+                "train_group": "kernel info ciod: generated <*> core files for program imb-mpi1.2kb",
+                "jaccard": 0.8
+              },
+              {
+                "test_group": "app fatal ciod: error loading /g/g23/fady/csar/codes/vicar3d/vicar3dp_1.<*>/vicar3dp_1.<*>: invalid or missing program image, no such file or directory",
+                "train_group": "app fatal ciod: error loading ./runtime_time: invalid or missing program image, no such file or directory",
+                "jaccard": 0.875
+              },
+              {
+                "test_group": "kernel info ciod: generated <*> core files for program /g/g23/fady/csar/codes/vicar3d/vicar3dp_1.<*>/xvicar3dp-<*>.<*>",
+                "train_group": "kernel info ciod: generated <*> core files for program imb-mpi1.2kb",
+                "jaccard": 0.8
+              },
+              {
+                "test_group": "kernel info ciod: generated <*> core files for program /p/gb1/antypas1/bgl_f3/11_4_2005/flash3/sod3d64dump/flash3",
+                "train_group": "kernel info ciod: generated <*> core files for program imb-mpi1.2kb",
+                "jaccard": 0.8
+              },
+              {
+                "test_group": "kernel info ciod: generated <*> core files for program /p/gb1/bmiller/caltech/thunder_compare/mdcask.opt",
+                "train_group": "kernel info ciod: generated <*> core files for program imb-mpi1.2kb",
+                "jaccard": 0.8
+              }
+            ],
+            "method": "Token Jaccard between each test template and train templates that share a rare token. Tokens present in more than 2% of train templates are ignored as candidates. A score of 0.8 or more is treated as a near-duplicate."
+          },
+          "models": [
+            {
+              "algorithm": "isolation_forest",
+              "score_kind": "anomaly_score",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 20000,
+              "n_validation": 8000,
+              "n_test": 20000,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": -0.1124740806147021,
+                "validation_f1": 0.18655786013827494,
+                "validation_precision": 0.102875,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": -0.1124740806147021
+              },
+              "default_threshold_value": 0.0,
+              "operating_point": {
+                "accuracy": 0.05345,
+                "precision_macro": 0.5266066516629158,
+                "recall_macro": 0.5001320236586396,
+                "f1_macro": 0.05078869388802559,
+                "precision_weighted": 0.9496309477369342,
+                "recall_weighted": 0.05345,
+                "f1_weighted": 0.0058756978226746776,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 1.0,
+                    "recall": 0.0002640473172792564,
+                    "f1": 0.0005279552293965472,
+                    "support": 18936
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.053213303325831456,
+                    "recall": 1.0,
+                    "f1": 0.10104943254665463,
+                    "support": 1064
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      5,
+                      18931
+                    ],
+                    [
+                      0,
+                      1064
+                    ]
+                  ]
+                },
+                "roc_auc": 0.8910876287677367,
+                "pr_auc": 0.2797628526594412,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.053213303325831456,
+                "recall": 1.0,
+                "f1": 0.10104943254665463,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 999.7359526827207,
+                "threshold": -0.1124740806147021,
+                "prevalence": 0.0532
+              },
+              "default_threshold": {
+                "accuracy": 0.9191,
+                "precision_macro": 0.6792539305892913,
+                "recall_macro": 0.8450665637477724,
+                "f1_macro": 0.7283010250003359,
+                "precision_weighted": 0.9531885517874116,
+                "recall_weighted": 0.9191,
+                "f1_weighted": 0.9317592160023643,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9858056552962298,
+                    "recall": 0.927915082382763,
+                    "f1": 0.9559847660500544,
+                    "support": 18936
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.3727022058823529,
+                    "recall": 0.7622180451127819,
+                    "f1": 0.5006172839506173,
+                    "support": 1064
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      17571,
+                      1365
+                    ],
+                    [
+                      253,
+                      811
+                    ]
+                  ]
+                },
+                "roc_auc": 0.8910876287677367,
+                "pr_auc": 0.2797628526594412,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.3727022058823529,
+                "recall": 0.7622180451127819,
+                "f1": 0.5006172839506173,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 72.08491761723701,
+                "threshold": 0.0,
+                "prevalence": 0.0532
+              },
+              "calibration": {
+                "ece": 0.12299506607591058,
+                "brier": 0.06764168242014171,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 9204,
+                    "mean_predicted": 0.046817312738973944,
+                    "observed_frequency": 0.11516731855714907
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "count": 7945,
+                    "mean_predicted": 0.15087481270284872,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.30000000000000004,
+                    "count": 2715,
+                    "mean_predicted": 0.21634878059139184,
+                    "observed_frequency": 0.0007366482504604051
+                  },
+                  {
+                    "lower": 0.30000000000000004,
+                    "upper": 0.4,
+                    "count": 111,
+                    "mean_predicted": 0.33974322247698224,
+                    "observed_frequency": 0.009009009009009009
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "count": 25,
+                    "mean_predicted": 0.4403617617208371,
+                    "observed_frequency": 0.04
+                  }
+                ],
+                "note": "Platt scaling was fit on validation scores only. The raw Isolation Forest score is not a class probability."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 575,
+                "n_test": 18206,
+                "metrics_status": "evaluated",
+                "metrics_note": null,
+                "metrics": {
+                  "accuracy": 0.05860705262001538,
+                  "precision_macro": 0.5291742211966376,
+                  "recall_macro": 0.5001458236117592,
+                  "f1_macro": 0.05542316162955484,
+                  "precision_weighted": 0.9450711878403635,
+                  "recall_weighted": 0.05860705262001538,
+                  "f1_weighted": 0.006981028319633929,
+                  "per_class": [
+                    {
+                      "label": "normal",
+                      "precision": 1.0,
+                      "recall": 0.0002916472235184321,
+                      "f1": 0.0005831243804303458,
+                      "support": 17144
+                    },
+                    {
+                      "label": "anomaly",
+                      "precision": 0.05834844239327509,
+                      "recall": 1.0,
+                      "f1": 0.11026319887867933,
+                      "support": 1062
+                    }
+                  ],
+                  "confusion_matrix": {
+                    "labels": [
+                      "normal",
+                      "anomaly"
+                    ],
+                    "matrix": [
+                      [
+                        5,
+                        17139
+                      ],
+                      [
+                        0,
+                        1062
+                      ]
+                    ]
+                  },
+                  "roc_auc": 0.8987151484314102,
+                  "pr_auc": 0.30931278203000045,
+                  "roc_auc_note": null,
+                  "pr_auc_note": null,
+                  "support": 18206,
+                  "precision": 0.05834844239327509,
+                  "recall": 1.0,
+                  "f1": 0.11026319887867933,
+                  "positive_label": "anomaly",
+                  "fp_per_1000_normal": 999.7083527764815,
+                  "threshold": -0.1124740806147021,
+                  "prevalence": 0.058332417884214
+                },
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "random_forest",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 20000,
+              "n_validation": 8000,
+              "n_test": 20000,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.375,
+                "validation_f1": 0.9744548286604361,
+                "validation_precision": 1.0,
+                "validation_recall": 0.9501822600243013,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.375
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.99175,
+                "precision_macro": 0.9951516425396987,
+                "recall_macro": 0.9229059260953397,
+                "f1_macro": 0.9558462123576417,
+                "precision_weighted": 0.9918109372166142,
+                "recall_weighted": 0.99175,
+                "f1_weighted": 0.9914255022242471,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9914131629928269,
+                    "recall": 0.9999471905365441,
+                    "f1": 0.9956618903641383,
+                    "support": 18936
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9988901220865705,
+                    "recall": 0.8458646616541353,
+                    "f1": 0.916030534351145,
+                    "support": 1064
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18935,
+                      1
+                    ],
+                    [
+                      164,
+                      900
+                    ]
+                  ]
+                },
+                "roc_auc": 0.998115982684849,
+                "pr_auc": 0.9661238900552169,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.9988901220865705,
+                "recall": 0.8458646616541353,
+                "f1": 0.916030534351145,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.05280946345585129,
+                "threshold": 0.375,
+                "prevalence": 0.0532
+              },
+              "default_threshold": {
+                "accuracy": 0.9908,
+                "precision_macro": 0.9951882845188285,
+                "recall_macro": 0.9135338345864661,
+                "f1_macro": 0.9502574071046264,
+                "precision_weighted": 0.9908885355648536,
+                "recall_weighted": 0.9908,
+                "f1_weighted": 0.9903868499616334,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9903765690376569,
+                    "recall": 1.0,
+                    "f1": 0.9951650199705697,
+                    "support": 18936
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 1.0,
+                    "recall": 0.8270676691729323,
+                    "f1": 0.9053497942386831,
+                    "support": 1064
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18936,
+                      0
+                    ],
+                    [
+                      184,
+                      880
+                    ]
+                  ]
+                },
+                "roc_auc": 0.998115982684849,
+                "pr_auc": 0.9661238900552169,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 1.0,
+                "recall": 0.8270676691729323,
+                "f1": 0.9053497942386831,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0,
+                "threshold": 0.5,
+                "prevalence": 0.0532
+              },
+              "calibration": {
+                "ece": 0.01933375,
+                "brier": 0.008249468749999999,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 18548,
+                    "mean_predicted": 0.00961963554021997,
+                    "observed_frequency": 0.0007547983610092732
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "count": 520,
+                    "mean_predicted": 0.11829326923076926,
+                    "observed_frequency": 0.2846153846153846
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.30000000000000004,
+                    "count": 28,
+                    "mean_predicted": 0.22499999999999995,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.30000000000000004,
+                    "upper": 0.4,
+                    "count": 3,
+                    "mean_predicted": 0.32916666666666666,
+                    "observed_frequency": 0.6666666666666666
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "count": 21,
+                    "mean_predicted": 0.42202380952380947,
+                    "observed_frequency": 0.9523809523809523
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6000000000000001,
+                    "count": 2,
+                    "mean_predicted": 0.575,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "count": 796,
+                    "mean_predicted": 0.8639918341708542,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1.0,
+                    "count": 82,
+                    "mean_predicted": 0.9000000000000004,
+                    "observed_frequency": 1.0
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 575,
+                "n_test": 18206,
+                "metrics_status": "evaluated",
+                "metrics_note": null,
+                "metrics": {
+                  "accuracy": 0.9909370537185543,
+                  "precision_macro": 0.9947058591773902,
+                  "recall_macro": 0.9227580292512828,
+                  "f1_macro": 0.9555349222171611,
+                  "precision_weighted": 0.9910119336904936,
+                  "recall_weighted": 0.9909370537185543,
+                  "f1_weighted": 0.9905818338087529,
+                  "per_class": [
+                    {
+                      "label": "normal",
+                      "precision": 0.9905240654070607,
+                      "recall": 0.9999416705552963,
+                      "f1": 0.9952105889524252,
+                      "support": 17144
+                    },
+                    {
+                      "label": "anomaly",
+                      "precision": 0.9988876529477196,
+                      "recall": 0.8455743879472694,
+                      "f1": 0.915859255481897,
+                      "support": 1062
+                    }
+                  ],
+                  "confusion_matrix": {
+                    "labels": [
+                      "normal",
+                      "anomaly"
+                    ],
+                    "matrix": [
+                      [
+                        17143,
+                        1
+                      ],
+                      [
+                        164,
+                        898
+                      ]
+                    ]
+                  },
+                  "roc_auc": 0.9989917024991806,
+                  "pr_auc": 0.9851027628527249,
+                  "roc_auc_note": null,
+                  "pr_auc_note": null,
+                  "support": 18206,
+                  "precision": 0.9988876529477196,
+                  "recall": 0.8455743879472694,
+                  "f1": 0.915859255481897,
+                  "positive_label": "anomaly",
+                  "fp_per_1000_normal": 0.05832944470368642,
+                  "threshold": 0.375,
+                  "prevalence": 0.058332417884214
+                },
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "tfidf_logreg",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 20000,
+              "n_validation": 8000,
+              "n_test": 20000,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.8656602103960265,
+                "validation_f1": 0.9673776662484317,
+                "validation_precision": 1.0,
+                "validation_recall": 0.93681652490887,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.8656602103960265
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.9907,
+                "precision_macro": 0.9951364919987449,
+                "recall_macro": 0.9125939849624061,
+                "f1_macro": 0.9496675868838927,
+                "precision_weighted": 0.9907904612488233,
+                "recall_weighted": 0.9907,
+                "f1_weighted": 0.9902773602370366,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9902729839974898,
+                    "recall": 1.0,
+                    "f1": 0.995112722686426,
+                    "support": 18936
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 1.0,
+                    "recall": 0.825187969924812,
+                    "f1": 0.9042224510813595,
+                    "support": 1064
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18936,
+                      0
+                    ],
+                    [
+                      186,
+                      878
+                    ]
+                  ]
+                },
+                "roc_auc": 0.9992782375774671,
+                "pr_auc": 0.9879203850540115,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 1.0,
+                "recall": 0.825187969924812,
+                "f1": 0.9042224510813595,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0,
+                "threshold": 0.8656602103960265,
+                "prevalence": 0.0532
+              },
+              "default_threshold": {
+                "accuracy": 0.9907,
+                "precision_macro": 0.994053994300583,
+                "recall_macro": 0.9134810251230103,
+                "f1_macro": 0.9497657653258573,
+                "precision_weighted": 0.9907669474624594,
+                "recall_weighted": 0.9907,
+                "f1_weighted": 0.9902873473628728,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9903755622973114,
+                    "recall": 0.9998943810730883,
+                    "f1": 0.9951122089662059,
+                    "support": 18936
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9977324263038548,
+                    "recall": 0.8270676691729323,
+                    "f1": 0.9044193216855088,
+                    "support": 1064
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18934,
+                      2
+                    ],
+                    [
+                      184,
+                      880
+                    ]
+                  ]
+                },
+                "roc_auc": 0.9992782375774671,
+                "pr_auc": 0.9879203850540115,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.9977324263038548,
+                "recall": 0.8270676691729323,
+                "f1": 0.9044193216855088,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.10561892691170258,
+                "threshold": 0.5,
+                "prevalence": 0.0532
+              },
+              "calibration": {
+                "ece": 0.025730424091682764,
+                "brier": 0.0075805870090907435,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 18818,
+                    "mean_predicted": 0.0192484877714822,
+                    "observed_frequency": 0.00010628122010840685
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "count": 295,
+                    "mean_predicted": 0.14442355128313905,
+                    "observed_frequency": 0.6169491525423729
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.30000000000000004,
+                    "count": 2,
+                    "mean_predicted": 0.21273600200991494,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.30000000000000004,
+                    "upper": 0.4,
+                    "count": 3,
+                    "mean_predicted": 0.39400210829894383,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6000000000000001,
+                    "count": 1,
+                    "mean_predicted": 0.5329545108726281,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "count": 3,
+                    "mean_predicted": 0.8284570774677578,
+                    "observed_frequency": 0.6666666666666666
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1.0,
+                    "count": 878,
+                    "mean_predicted": 0.9859116372366324,
+                    "observed_frequency": 1.0
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 575,
+                "n_test": 18206,
+                "metrics_status": "evaluated",
+                "metrics_note": null,
+                "metrics": {
+                  "accuracy": 0.989893441722509,
+                  "precision_macro": 0.9946906740535549,
+                  "recall_macro": 0.9133709981167608,
+                  "f1_macro": 0.9499084869118339,
+                  "precision_weighted": 0.990000759746693,
+                  "recall_weighted": 0.989893441722509,
+                  "f1_weighted": 0.9894411343522171,
+                  "per_class": [
+                    {
+                      "label": "normal",
+                      "precision": 0.9893813481071099,
+                      "recall": 1.0,
+                      "f1": 0.9946623346484103,
+                      "support": 17144
+                    },
+                    {
+                      "label": "anomaly",
+                      "precision": 1.0,
+                      "recall": 0.8267419962335216,
+                      "f1": 0.9051546391752577,
+                      "support": 1062
+                    }
+                  ],
+                  "confusion_matrix": {
+                    "labels": [
+                      "normal",
+                      "anomaly"
+                    ],
+                    "matrix": [
+                      [
+                        17144,
+                        0
+                      ],
+                      [
+                        184,
+                        878
+                      ]
+                    ]
+                  },
+                  "roc_auc": 0.9992279861819633,
+                  "pr_auc": 0.9882487183833084,
+                  "roc_auc_note": null,
+                  "pr_auc_note": null,
+                  "support": 18206,
+                  "precision": 1.0,
+                  "recall": 0.8267419962335216,
+                  "f1": 0.9051546391752577,
+                  "positive_label": "anomaly",
+                  "fp_per_1000_normal": 0.0,
+                  "threshold": 0.8656602103960265,
+                  "prevalence": 0.058332417884214
+                },
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            }
+          ],
+          "baselines": [
+            {
+              "name": "severity_rank_only",
+              "detail": "Logistic regression on the severity rank alone. The level word is available to the text models.",
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.8886225376576912,
+                "validation_f1": 0.42411749549085287,
+                "validation_precision": 0.26913015042511446,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.8886225376576912
+              },
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "operating_point": {
+                "accuracy": 0.7561,
+                "precision_macro": 0.5895321440592394,
+                "recall_macro": 0.8711977186311788,
+                "f1_macro": 0.5779472944942057,
+                "precision_weighted": 0.956326220127903,
+                "recall_weighted": 0.7561,
+                "f1_weighted": 0.8229792440708992,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 1.0,
+                    "recall": 0.7423954372623575,
+                    "f1": 0.8521549372613202,
+                    "support": 18936
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.17906428811847863,
+                    "recall": 1.0,
+                    "f1": 0.30373965172709105,
+                    "support": 1064
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      14058,
+                      4878
+                    ],
+                    [
+                      0,
+                      1064
+                    ]
+                  ]
+                },
+                "roc_auc": 0.8711977186311788,
+                "pr_auc": 0.17906428811847863,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.17906428811847863,
+                "recall": 1.0,
+                "f1": 0.30373965172709105,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 257.6045627376426,
+                "threshold": 0.8886225376576912,
+                "prevalence": 0.0532
+              },
+              "real_world": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dataset": "hdfs",
+      "dataset_version": "loghub-zenodo-8196385-HDFS_v1",
+      "source_url": "https://zenodo.org/records/8196385/files/HDFS_v1.zip?download=1",
+      "file_sha256": "1c711ed6c8848fc3243fb4d092f172f31d128c8a6ec7f26ebba72ab931885ed8",
+      "label_unit": "block",
+      "label_provenance": "dataset_native",
+      "label_definition": "anomaly_label.csv supplies Normal or Anomaly for a block. Features are the event-id sequence. Success/Fail, latency, and BlockId are excluded.",
+      "population": {
+        "parsed": 575061,
+        "skipped": 0,
+        "rows_seen": 575061,
+        "normal": 558223,
+        "anomaly": 16838,
+        "prevalence": 0.029280371995318757,
+        "template_groups": 18373,
+        "labeled_blocks": 575061
+      },
+      "leakage": {
+        "alert_token_in_message_body": 0,
+        "anomaly_rows": 16838,
+        "identifier_in_features": 0,
+        "severity_prevalence": [
+          {
+            "severity_rank": 0,
+            "normal": 558223,
+            "anomaly": 16838,
+            "prevalence": 0.029280371995318757
+          }
+        ],
+        "features_available": [
+          "event-id sequence from Event_traces Features"
+        ],
+        "features_excluded": [
+          "BlockId",
+          "Success/Fail",
+          "Type",
+          "TimeInterval",
+          "Latency"
+        ]
+      },
+      "positive_template_groups": 4122,
+      "mixed_label_groups": 10,
+      "protocols": [
+        {
+          "name": "realistic_group",
+          "meaningful": true,
+          "reason": "Template groups were assigned with stratification on the majority label before any sampling. Each group is in train, validation, or test only.",
+          "stratified": true,
+          "full_split": {
+            "train": {
+              "groups": 11023,
+              "normal": 358965,
+              "anomaly": 8296,
+              "rows": 367261,
+              "prevalence": 0.022588840089200868
+            },
+            "validation": {
+              "groups": 3675,
+              "normal": 148456,
+              "anomaly": 3263,
+              "rows": 151719,
+              "prevalence": 0.021506864664280676
+            },
+            "test": {
+              "groups": 3675,
+              "normal": 50802,
+              "anomaly": 5279,
+              "rows": 56081,
+              "prevalence": 0.09413170235908774
+            },
+            "population": {
+              "groups": 18373,
+              "normal": 558223,
+              "anomaly": 16838,
+              "rows": 575061,
+              "prevalence": 0.029280371995318757
+            }
+          },
+          "evaluated_rows": {
+            "train": {
+              "rows": 20000,
+              "normal": 19551,
+              "anomaly": 449,
+              "prevalence": 0.02245,
+              "groups": 1834
+            },
+            "validation": {
+              "rows": 8000,
+              "normal": 7839,
+              "anomaly": 161,
+              "prevalence": 0.020125,
+              "groups": 571
+            },
+            "test": {
+              "rows": 20000,
+              "normal": 18138,
+              "anomaly": 1862,
+              "prevalence": 0.0931,
+              "groups": 1956
+            }
+          },
+          "span_overlap": null,
+          "anomaly_bearing_groups": 4124,
+          "anomaly_group_placement": {
+            "validation": 824,
+            "train": 2475,
+            "test": 825
+          },
+          "near_duplicates": {
+            "train_groups": 11023,
+            "test_groups": 3675,
+            "exact_group_overlap": 0,
+            "jaccard_at_least_0_8": 8,
+            "jaccard_at_least_0_5": 134,
+            "median_max_jaccard": 0.0,
+            "p95_max_jaccard": 0.0,
+            "examples": [
+              {
+                "test_group": "e5 e5 e22 e5 e13 e11 e9 e13 e11 e9 e13 e11 e9 e26 e26 e26 e23 e23 e23 e21 e21 e20 e21",
+                "train_group": "e5 e22 e5 e5 e13 e11 e9 e13 e11 e9 e13 e11 e9 e26 e26 e26 e23 e23 e23 e21 e21 e20 e21",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "e5 e22 e5 e5 e13 e13 e13 e11 e9 e11 e9 e11 e9 e26 e26 e26 e23 e23 e23 e21 e21 e21",
+                "train_group": "e5 e5 e5 e22 e13 e13 e13 e11 e9 e26 e11 e9 e11 e9 e26 e26 e23 e23 e23 e21 e21 e21",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "e13 e5 e11 e9 e13 e5 e11 e9 e13 e5 e11 e9 e26 e22 e26 e26 e23 e23 e23 e21 e21 e21",
+                "train_group": "e5 e5 e5 e22 e13 e13 e13 e11 e9 e26 e11 e9 e11 e9 e26 e26 e23 e23 e23 e21 e21 e21",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "e5 e5 e22 e5 e11 e9 e11 e9 e11 e9 e26 e26 e27 e26",
+                "train_group": "e5 e22 e5 e5 e11 e9 e26 e11 e9 e11 e9 e26 e27 e26",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "e5 e5 e5 e22 e11 e10 e14 e8 e14 e7 e11 e10 e15 e5 e7 e11 e15 e5 e14 e7 e11 e9 e11 e9 e26 e25 e18 e5 e5 e16 e6 e6 e26 e26 e26 e26 e23 e23 e23 e23 e21 e21 e21 e21",
+                "train_group": "e5 e22 e5 e5 e14 e7 e11 e10 e15 e5 e14 e7 e8 e11 e14 e7 e11 e10 e15 e5 e11 e9 e11 e9 e26 e25 e18 e5 e5 e26 e16 e6 e6 e26 e26 e21 e23 e23 e23 e21 e21 e21",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "e5 e5 e5 e22 e11 e9 e26 e26 e11 e9 e11 e9 e27 e26 e23 e23 e23 e21 e21 e21",
+                "train_group": "e5 e22 e5 e5 e11 e9 e26 e11 e9 e11 e9 e26 e27 e26 e23 e23 e23 e21 e21 e21",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "e5 e5 e5 e22 e11 e9 e11 e9 e11 e9 e26 e26 e26 e27 e3 e4 e3 e3 e4 e23 e23 e23 e21 e21 e21",
+                "train_group": "e5 e22 e5 e5 e11 e9 e11 e9 e11 e9 e27 e26 e26 e26 e4 e3 e3 e4 e3 e23 e23 e23 e21 e21 e21",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "e22 e5 e5 e5 e26 e11 e9 e11 e9 e11 e9 e26 e26 e27 e3 e4 e3 e4 e3 e3 e4 e3 e3 e23 e23 e23 e21 e21 e21",
+                "train_group": "e5 e22 e5 e5 e11 e9 e11 e9 e11 e9 e27 e26 e26 e26 e4 e3 e3 e4 e3 e23 e23 e23 e21 e21 e21",
+                "jaccard": 1.0
+              }
+            ],
+            "method": "Token Jaccard between each test template and train templates that share a rare token. Tokens present in more than 2% of train templates are ignored as candidates. A score of 0.8 or more is treated as a near-duplicate."
+          },
+          "models": [
+            {
+              "algorithm": "isolation_forest",
+              "score_kind": "anomaly_score",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 20000,
+              "n_validation": 8000,
+              "n_test": 20000,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": -0.025194942553449784,
+                "validation_f1": 0.20458553791887127,
+                "validation_precision": 0.11921891058581706,
+                "validation_recall": 0.7204968944099379,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": -0.025194942553449784
+              },
+              "default_threshold_value": 0.0,
+              "operating_point": {
+                "accuracy": 0.67145,
+                "precision_macro": 0.5552908344132914,
+                "recall_macro": 0.649223686549676,
+                "f1_macro": 0.5247037435431887,
+                "precision_weighted": 0.8730398393022443,
+                "recall_weighted": 0.67145,
+                "f1_weighted": 0.7396269928989936,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9457418111753372,
+                    "recall": 0.6765354504355496,
+                    "f1": 0.7888021084434159,
+                    "support": 18138
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.16483985765124556,
+                    "recall": 0.6219119226638024,
+                    "f1": 0.2606053786429616,
+                    "support": 1862
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      12271,
+                      5867
+                    ],
+                    [
+                      704,
+                      1158
+                    ]
+                  ]
+                },
+                "roc_auc": 0.6430874454696829,
+                "pr_auc": 0.20381925287123195,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.16483985765124556,
+                "recall": 0.6219119226638024,
+                "f1": 0.2606053786429616,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 323.46454956445035,
+                "threshold": -0.025194942553449784,
+                "prevalence": 0.0931
+              },
+              "default_threshold": {
+                "accuracy": 0.83315,
+                "precision_macro": 0.5797411195201883,
+                "recall_macro": 0.6116275104850164,
+                "f1_macro": 0.5902273433312009,
+                "precision_weighted": 0.8637572976423075,
+                "recall_weighted": 0.83315,
+                "f1_weighted": 0.846984870439544,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9287410926365796,
+                    "recall": 0.88383504245231,
+                    "f1": 0.9057318003333428,
+                    "support": 18138
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.230741146403797,
+                    "recall": 0.3394199785177229,
+                    "f1": 0.2747228863290589,
+                    "support": 1862
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      16031,
+                      2107
+                    ],
+                    [
+                      1230,
+                      632
+                    ]
+                  ]
+                },
+                "roc_auc": 0.6430874454696829,
+                "pr_auc": 0.20381925287123195,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.230741146403797,
+                "recall": 0.3394199785177229,
+                "f1": 0.2747228863290589,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 116.16495754768994,
+                "threshold": 0.0,
+                "prevalence": 0.0931
+              },
+              "calibration": {
+                "ece": 0.06864971578912338,
+                "brier": 0.08878862383301664,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 20000,
+                    "mean_predicted": 0.024450284210876624,
+                    "observed_frequency": 0.0931
+                  }
+                ],
+                "note": "Platt scaling was fit on validation scores only. The raw Isolation Forest score is not a class probability."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 131,
+                "n_test": 19452,
+                "metrics_status": "evaluated",
+                "metrics_note": null,
+                "metrics": {
+                  "accuracy": 0.6666152580711495,
+                  "precision_macro": 0.529021750875873,
+                  "recall_macro": 0.6029251591865965,
+                  "f1_macro": 0.4838527590701132,
+                  "precision_weighted": 0.894792607076717,
+                  "recall_weighted": 0.6666152580711495,
+                  "f1_weighted": 0.7494623278126993,
+                  "per_class": [
+                    {
+                      "label": "normal",
+                      "precision": 0.951978277734678,
+                      "recall": 0.676572751833269,
+                      "f1": 0.7909884938924163,
+                      "support": 18137
+                    },
+                    {
+                      "label": "anomaly",
+                      "precision": 0.10606522401706797,
+                      "recall": 0.529277566539924,
+                      "f1": 0.17671702424781008,
+                      "support": 1315
+                    }
+                  ],
+                  "confusion_matrix": {
+                    "labels": [
+                      "normal",
+                      "anomaly"
+                    ],
+                    "matrix": [
+                      [
+                        12271,
+                        5866
+                      ],
+                      [
+                        619,
+                        696
+                      ]
+                    ]
+                  },
+                  "roc_auc": 0.5820040163260994,
+                  "pr_auc": 0.12860149655187103,
+                  "roc_auc_note": null,
+                  "pr_auc_note": null,
+                  "support": 19452,
+                  "precision": 0.10606522401706797,
+                  "recall": 0.529277566539924,
+                  "f1": 0.17671702424781008,
+                  "positive_label": "anomaly",
+                  "fp_per_1000_normal": 323.427248166731,
+                  "threshold": -0.025194942553449784,
+                  "prevalence": 0.06760230310507917
+                },
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "random_forest",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 20000,
+              "n_validation": 8000,
+              "n_test": 20000,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.3252499999999941,
+                "validation_f1": 0.9844236760124611,
+                "validation_precision": 0.9875,
+                "validation_recall": 0.9813664596273292,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.3252499999999941
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.9941,
+                "precision_macro": 0.9750087202200475,
+                "recall_macro": 0.9909640719633781,
+                "f1_macro": 0.9828195660449515,
+                "precision_weighted": 0.9942656407516852,
+                "recall_weighted": 0.9941,
+                "f1_weighted": 0.994148724569718,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9986716847465131,
+                    "recall": 0.994817510199581,
+                    "f1": 0.9967408716787273,
+                    "support": 18138
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9513457556935818,
+                    "recall": 0.9871106337271751,
+                    "f1": 0.9688982604111755,
+                    "support": 1862
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18044,
+                      94
+                    ],
+                    [
+                      24,
+                      1838
+                    ]
+                  ]
+                },
+                "roc_auc": 0.998119190396008,
+                "pr_auc": 0.986256461734569,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.9513457556935818,
+                "recall": 0.9871106337271751,
+                "f1": 0.9688982604111755,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 5.18248980041901,
+                "threshold": 0.3252499999999941,
+                "prevalence": 0.0931
+              },
+              "default_threshold": {
+                "accuracy": 0.99575,
+                "precision_macro": 0.9907934691268747,
+                "recall_macro": 0.9839220173679792,
+                "f1_macro": 0.9873273325768248,
+                "precision_weighted": 0.9957323999760843,
+                "recall_weighted": 0.99575,
+                "f1_weighted": 0.9957350194814307,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9968624428909562,
+                    "recall": 0.9984562796339177,
+                    "f1": 0.9976587246935684,
+                    "support": 18138
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9847244953627933,
+                    "recall": 0.9693877551020408,
+                    "f1": 0.9769959404600812,
+                    "support": 1862
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18110,
+                      28
+                    ],
+                    [
+                      57,
+                      1805
+                    ]
+                  ]
+                },
+                "roc_auc": 0.998119190396008,
+                "pr_auc": 0.986256461734569,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.9847244953627933,
+                "recall": 0.9693877551020408,
+                "f1": 0.9769959404600812,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1.5437203660822583,
+                "threshold": 0.5,
+                "prevalence": 0.0931
+              },
+              "calibration": {
+                "ece": 0.031124315476190472,
+                "brier": 0.009890903716695012,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 16460,
+                    "mean_predicted": 0.011159629404617254,
+                    "observed_frequency": 0.00036452004860267317
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "count": 1482,
+                    "mean_predicted": 0.1230765214317846,
+                    "observed_frequency": 0.0020242914979757085
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.30000000000000004,
+                    "count": 118,
+                    "mean_predicted": 0.25423728813559315,
+                    "observed_frequency": 0.11016949152542373
+                  },
+                  {
+                    "lower": 0.30000000000000004,
+                    "upper": 0.4,
+                    "count": 52,
+                    "mean_predicted": 0.3586538461538462,
+                    "observed_frequency": 0.25
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "count": 55,
+                    "mean_predicted": 0.4358874458874458,
+                    "observed_frequency": 0.4
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6000000000000001,
+                    "count": 501,
+                    "mean_predicted": 0.5618263473053893,
+                    "observed_frequency": 0.9820359281437125
+                  },
+                  {
+                    "lower": 0.6000000000000001,
+                    "upper": 0.7000000000000001,
+                    "count": 32,
+                    "mean_predicted": 0.661328125,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.7000000000000001,
+                    "upper": 0.8,
+                    "count": 37,
+                    "mean_predicted": 0.7537001287001288,
+                    "observed_frequency": 0.918918918918919
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "count": 70,
+                    "mean_predicted": 0.8366071428571431,
+                    "observed_frequency": 0.9428571428571428
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1.0,
+                    "count": 1193,
+                    "mean_predicted": 0.9850272422464376,
+                    "observed_frequency": 0.9899413243922883
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 131,
+                "n_test": 19452,
+                "metrics_status": "evaluated",
+                "metrics_note": null,
+                "metrics": {
+                  "accuracy": 0.99455068887518,
+                  "precision_macro": 0.9660241602500275,
+                  "recall_macro": 0.9928458745865594,
+                  "f1_macro": 0.9789928151138862,
+                  "precision_weighted": 0.9948315359573341,
+                  "recall_weighted": 0.99455068887518,
+                  "f1_weighted": 0.9946268982926486,
+                  "per_class": [
+                    {
+                      "label": "normal",
+                      "precision": 0.9993353641650512,
+                      "recall": 0.9948172244582897,
+                      "f1": 0.9970711759504863,
+                      "support": 18137
+                    },
+                    {
+                      "label": "anomaly",
+                      "precision": 0.9327129563350036,
+                      "recall": 0.990874524714829,
+                      "f1": 0.9609144542772862,
+                      "support": 1315
+                    }
+                  ],
+                  "confusion_matrix": {
+                    "labels": [
+                      "normal",
+                      "anomaly"
+                    ],
+                    "matrix": [
+                      [
+                        18043,
+                        94
+                      ],
+                      [
+                        12,
+                        1303
+                      ]
+                    ]
+                  },
+                  "roc_auc": 0.9978688817745628,
+                  "pr_auc": 0.9812148873648066,
+                  "roc_auc_note": null,
+                  "pr_auc_note": null,
+                  "support": 19452,
+                  "precision": 0.9327129563350036,
+                  "recall": 0.990874524714829,
+                  "f1": 0.9609144542772862,
+                  "positive_label": "anomaly",
+                  "fp_per_1000_normal": 5.182775541710316,
+                  "threshold": 0.3252499999999941,
+                  "prevalence": 0.06760230310507917
+                },
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "tfidf_logreg",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 20000,
+              "n_validation": 8000,
+              "n_test": 20000,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.5771474285267634,
+                "validation_f1": 0.9526627218934911,
+                "validation_precision": 0.9096045197740112,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.5771474285267634
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.9948,
+                "precision_macro": 0.9739506776892684,
+                "recall_macro": 0.9966511666908873,
+                "f1_macro": 0.9849642565680754,
+                "precision_weighted": 0.9950593844527337,
+                "recall_weighted": 0.9948,
+                "f1_weighted": 0.9948608045464387,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9998891229626344,
+                    "recall": 0.9943764472378432,
+                    "f1": 0.997125165855816,
+                    "support": 18138
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9480122324159022,
+                    "recall": 0.9989258861439313,
+                    "f1": 0.9728033472803347,
+                    "support": 1862
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18036,
+                      102
+                    ],
+                    [
+                      2,
+                      1860
+                    ]
+                  ]
+                },
+                "roc_auc": 0.9964913938833189,
+                "pr_auc": 0.9376567670572258,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.9480122324159022,
+                "recall": 0.9989258861439313,
+                "f1": 0.9728033472803347,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 5.623552762156798,
+                "threshold": 0.5771474285267634,
+                "prevalence": 0.0931
+              },
+              "default_threshold": {
+                "accuracy": 0.99475,
+                "precision_macro": 0.9737092043577938,
+                "recall_macro": 0.9966236002557787,
+                "f1_macro": 0.9848232312966652,
+                "precision_weighted": 0.9950144171158221,
+                "recall_weighted": 0.99475,
+                "f1_weighted": 0.9948119847690287,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9998891168154349,
+                    "recall": 0.9943213143676259,
+                    "f1": 0.9970974429854872,
+                    "support": 18138
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9475292919001528,
+                    "recall": 0.9989258861439313,
+                    "f1": 0.9725490196078431,
+                    "support": 1862
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18035,
+                      103
+                    ],
+                    [
+                      2,
+                      1860
+                    ]
+                  ]
+                },
+                "roc_auc": 0.9964913938833189,
+                "pr_auc": 0.9376567670572258,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 0.9475292919001528,
+                "recall": 0.9989258861439313,
+                "f1": 0.9725490196078431,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 5.678685632374021,
+                "threshold": 0.5,
+                "prevalence": 0.0931
+              },
+              "calibration": {
+                "ece": 0.03390322312135456,
+                "brier": 0.009707626013953249,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 17168,
+                    "mean_predicted": 0.017589978378654905,
+                    "observed_frequency": 5.824790307548928e-05
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "count": 859,
+                    "mean_predicted": 0.1380440119768471,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.30000000000000004,
+                    "count": 8,
+                    "mean_predicted": 0.2512085413480182,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.30000000000000004,
+                    "upper": 0.4,
+                    "count": 1,
+                    "mean_predicted": 0.306343517594869,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "count": 1,
+                    "mean_predicted": 0.4442115177957444,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6000000000000001,
+                    "count": 1,
+                    "mean_predicted": 0.540587989653017,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.6000000000000001,
+                    "upper": 0.7000000000000001,
+                    "count": 476,
+                    "mean_predicted": 0.6278717387186963,
+                    "observed_frequency": 0.9978991596638656
+                  },
+                  {
+                    "lower": 0.7000000000000001,
+                    "upper": 0.8,
+                    "count": 8,
+                    "mean_predicted": 0.7635415432388575,
+                    "observed_frequency": 0.75
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "count": 26,
+                    "mean_predicted": 0.8686879374989156,
+                    "observed_frequency": 0.8076923076923077
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1.0,
+                    "count": 1452,
+                    "mean_predicted": 0.9884712451261795,
+                    "observed_frequency": 0.9352617079889807
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 131,
+                "n_test": 19452,
+                "metrics_status": "evaluated",
+                "metrics_note": null,
+                "metrics": {
+                  "accuracy": 0.9946535060662143,
+                  "precision_macro": 0.9639021555808623,
+                  "recall_macro": 0.9964276123153077,
+                  "f1_macro": 0.9795148844079016,
+                  "precision_weighted": 0.9950235138930144,
+                  "recall_weighted": 0.9946535060662143,
+                  "f1_weighted": 0.9947440372326917,
+                  "per_class": [
+                    {
+                      "label": "normal",
+                      "precision": 0.9998891168154349,
+                      "recall": 0.9943761371781441,
+                      "f1": 0.9971250069110411,
+                      "support": 18137
+                    },
+                    {
+                      "label": "anomaly",
+                      "precision": 0.9279151943462898,
+                      "recall": 0.9984790874524715,
+                      "f1": 0.9619047619047619,
+                      "support": 1315
+                    }
+                  ],
+                  "confusion_matrix": {
+                    "labels": [
+                      "normal",
+                      "anomaly"
+                    ],
+                    "matrix": [
+                      [
+                        18035,
+                        102
+                      ],
+                      [
+                        2,
+                        1313
+                      ]
+                    ]
+                  },
+                  "roc_auc": 0.9963383047196129,
+                  "pr_auc": 0.9188793177158717,
+                  "roc_auc_note": null,
+                  "pr_auc_note": null,
+                  "support": 19452,
+                  "precision": 0.9279151943462898,
+                  "recall": 0.9984790874524715,
+                  "f1": 0.9619047619047619,
+                  "positive_label": "anomaly",
+                  "fp_per_1000_normal": 5.623862821855875,
+                  "threshold": 0.5771474285267634,
+                  "prevalence": 0.06760230310507917
+                },
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            }
+          ],
+          "baselines": [
+            {
+              "name": "single_event_id",
+              "token": "E7",
+              "train_precision": 1.0,
+              "detail": "The event id with the highest train anomaly rate and at least 30 train rows. It was chosen on train only.",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "operating_point": {
+                "accuracy": 0.9297,
+                "precision_macro": 0.9640298812934915,
+                "recall_macro": 0.6224489795918368,
+                "f1_macro": 0.678065189188907,
+                "precision_weighted": 0.9347573986901351,
+                "recall_weighted": 0.9297,
+                "f1_weighted": 0.9096910335934625,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.9280597625869832,
+                    "recall": 1.0,
+                    "f1": 0.9626877554269944,
+                    "support": 18138
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 1.0,
+                    "recall": 0.24489795918367346,
+                    "f1": 0.39344262295081966,
+                    "support": 1862
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      18138,
+                      0
+                    ],
+                    [
+                      1406,
+                      456
+                    ]
+                  ]
+                },
+                "roc_auc": 0.6224489795918368,
+                "pr_auc": 0.31519795918367344,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 20000,
+                "precision": 1.0,
+                "recall": 0.24489795918367346,
+                "f1": 0.39344262295081966,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0
+              },
+              "real_world": true
+            }
+          ]
+        },
+        {
+          "name": "chronological_group",
+          "meaningful": false,
+          "reason": "Fewer than 95% of parsed rows have a timestamp, so a time split would not be a future holdout.",
+          "models": [],
+          "baselines": []
+        }
+      ]
+    },
+    {
+      "dataset": "openstack",
+      "dataset_version": "loghub-zenodo-8196385-OpenStack.tar.gz",
+      "source_url": "https://zenodo.org/records/8196385/files/OpenStack.tar.gz?download=1",
+      "file_sha256": "0882aa484f285e3dda476ff39ed739603c446f27b76bb113e284cda6ebb09d0b",
+      "label_unit": "vm_instance",
+      "label_provenance": "dataset_native",
+      "label_definition": "anomaly_labels.txt lists VM instance ids with injected anomalies. Every other instance id found in [instance: ...] or /servers/<id> is normal. Lines that mention no instance are unlabeled and are excluded. Instance ids are replaced before grouping so the model cannot memorize the four ids.",
+      "leakage": {
+        "identifier_in_features": 0,
+        "features_available": [
+          "normalized log text for one instance or application"
+        ],
+        "features_excluded": [
+          "raw instance or application id"
+        ]
+      },
+      "population": {
+        "parsed": 2069,
+        "skipped": 0,
+        "rows_seen": 2069,
+        "normal": 2065,
+        "anomaly": 4,
+        "prevalence": 0.0019333011116481392,
+        "template_groups": 39
+      },
+      "mixed_label_groups": 1,
+      "feature_note": "Each instance is one example. At most 40 normalized lines are kept per instance before the instance groups are split. Instance ids are replaced with <*>.",
+      "positive_template_groups": 0,
+      "protocols": [
+        {
+          "name": "realistic_group",
+          "meaningful": true,
+          "reason": "A class has fewer than three template groups, so the split is a seeded group holdout and is not stratified. Supervised training is refused when the positive class has fewer than two independent groups.",
+          "stratified": false,
+          "full_split": {
+            "train": {
+              "groups": 23,
+              "normal": 1381,
+              "anomaly": 4,
+              "rows": 1385,
+              "prevalence": 0.002888086642599278
+            },
+            "validation": {
+              "groups": 8,
+              "normal": 570,
+              "anomaly": 0,
+              "rows": 570,
+              "prevalence": 0.0
+            },
+            "test": {
+              "groups": 8,
+              "normal": 114,
+              "anomaly": 0,
+              "rows": 114,
+              "prevalence": 0.0
+            },
+            "population": {
+              "groups": 39,
+              "normal": 2065,
+              "anomaly": 4,
+              "rows": 2069,
+              "prevalence": 0.0019333011116481392
+            }
+          },
+          "evaluated_rows": {
+            "train": {
+              "rows": 1385,
+              "normal": 1381,
+              "anomaly": 4,
+              "prevalence": 0.002888086642599278,
+              "groups": 23
+            },
+            "validation": {
+              "rows": 570,
+              "normal": 570,
+              "anomaly": 0,
+              "prevalence": 0.0,
+              "groups": 8
+            },
+            "test": {
+              "rows": 114,
+              "normal": 114,
+              "anomaly": 0,
+              "prevalence": 0.0,
+              "groups": 8
+            }
+          },
+          "span_overlap": null,
+          "anomaly_bearing_groups": 1,
+          "anomaly_group_placement": {
+            "train": 1
+          },
+          "near_duplicates": {
+            "train_groups": 23,
+            "test_groups": 8,
+            "exact_group_overlap": 0,
+            "jaccard_at_least_0_8": 8,
+            "jaccard_at_least_0_5": 8,
+            "median_max_jaccard": 1.0,
+            "p95_max_jaccard": 1.0,
+            "examples": [
+              {
+                "test_group": "1dd3020b72ddd89fb34884b55273f2627988ec33d955a7854beeea21ba4325f7",
+                "train_group": "e5a22bd759e2753e8a6930ef23ad0ff43071833c30103aef2dd65707f3fcf582",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "65998d251ceafcce4a405863159e8950e73a88a8d32e2ca22285f55525d2dc4a",
+                "train_group": "0a1ba72616649f89239a3528470e95b93912a57e33aa44a88f5dd930637f146c",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "4d5f5cd4228a5b16be0ca1f80d5e98d9d920829c659d41f0e80d6562b6a223a4",
+                "train_group": "0a1ba72616649f89239a3528470e95b93912a57e33aa44a88f5dd930637f146c",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "54c58020683bdb086e3c8ac54a9d111d71458119ea5247d521fa162c437072ee",
+                "train_group": "0a1ba72616649f89239a3528470e95b93912a57e33aa44a88f5dd930637f146c",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "0d09a250df4b834b37199713af893c614366e78a78652264f01a0aae2b80820a",
+                "train_group": "0a1ba72616649f89239a3528470e95b93912a57e33aa44a88f5dd930637f146c",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "34cdfeefe7ad6927f890d85253b0892cc9959d1d9a97be898badda06ce645378",
+                "train_group": "e5a22bd759e2753e8a6930ef23ad0ff43071833c30103aef2dd65707f3fcf582",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "937b449644a99249a8d511ff184ba134f2a5b67988f452c81c0e7414b889dd0a",
+                "train_group": "8abbecad4ab177875ba6063d1bff9647c238ab1e4d9e687e15ac1b171d0a4e74",
+                "jaccard": 0.8571428571428571
+              },
+              {
+                "test_group": "nova-compute.log.<*>.<*>-<*>-17_12:<*>:<*> <*>-<*>-<*> <*>:<*>:<*>.<*> <*> info nova.compute.manager [-] [instance: <*>] vm stopped (lifecycle event)",
+                "train_group": "nova-compute.log.<*>-<*>-14_21:<*>:<*> <*>-<*>-<*> <*>:<*>:<*>.<*> <*> info nova.compute.manager [-] [instance: <*>] vm stopped (lifecycle event)",
+                "jaccard": 0.8461538461538461
+              }
+            ],
+            "method": "Token Jaccard between each test template and train templates that share a rare token. Tokens present in more than 2% of train templates are ignored as candidates. A score of 0.8 or more is treated as a near-duplicate."
+          },
+          "models": [
+            {
+              "algorithm": "isolation_forest",
+              "score_kind": "anomaly_score",
+              "metrics_status": "not_evaluated",
+              "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+              "detail": "The held-out test set contains one class, so accuracy is not reported.",
+              "real_world": false,
+              "n_train": 1385,
+              "n_validation": 570,
+              "n_test": 114,
+              "threshold": {
+                "source": "default_because_validation_has_one_class",
+                "value": null,
+                "validation_f1": null,
+                "validation_precision": null,
+                "validation_recall": null,
+                "applied_value": 0.0
+              },
+              "default_threshold_value": 0.0,
+              "operating_point": null,
+              "default_threshold": null,
+              "calibration": {
+                "ece": null,
+                "brier": null,
+                "note": "The raw Isolation Forest score is not a probability, and validation could not fit a map."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 8,
+                "n_test": 0,
+                "metrics_status": "not_evaluated",
+                "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+                "metrics": null,
+                "note": "Every evaluated test template met the near-duplicate cutoff."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "random_forest",
+              "metrics_status": "not_evaluated",
+              "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+              "detail": "Fewer than two template groups contain any anomaly. A supervised model cannot be trained on that template and tested on a different one.",
+              "real_world": false,
+              "n_train": 1385,
+              "n_validation": 570,
+              "n_test": 114,
+              "threshold": null,
+              "operating_point": null,
+              "default_threshold": null,
+              "calibration": null,
+              "near_duplicate_excluded": null,
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "tfidf_logreg",
+              "metrics_status": "not_evaluated",
+              "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+              "detail": "Fewer than two template groups contain any anomaly. A supervised model cannot be trained on that template and tested on a different one.",
+              "real_world": false,
+              "n_train": 1385,
+              "n_validation": 570,
+              "n_test": 114,
+              "threshold": null,
+              "operating_point": null,
+              "default_threshold": null,
+              "calibration": null,
+              "near_duplicate_excluded": null,
+              "hyperparameters_locked": true
+            }
+          ],
+          "baselines": []
+        },
+        {
+          "name": "chronological_group",
+          "meaningful": true,
+          "reason": "Each template is assigned by its earliest timestamp. Train is the earliest groups, validation the next block, and test the latest groups. A template that starts during training never appears in the test.",
+          "stratified": false,
+          "full_split": {
+            "train": {
+              "groups": 23,
+              "normal": 1852,
+              "anomaly": 4,
+              "rows": 1856,
+              "prevalence": 0.0021551724137931034
+            },
+            "validation": {
+              "groups": 8,
+              "normal": 203,
+              "anomaly": 0,
+              "rows": 203,
+              "prevalence": 0.0
+            },
+            "test": {
+              "groups": 8,
+              "normal": 10,
+              "anomaly": 0,
+              "rows": 10,
+              "prevalence": 0.0
+            },
+            "population": {
+              "groups": 39,
+              "normal": 2065,
+              "anomaly": 4,
+              "rows": 2069,
+              "prevalence": 0.0019333011116481392
+            }
+          },
+          "evaluated_rows": {
+            "train": {
+              "rows": 1856,
+              "normal": 1852,
+              "anomaly": 4,
+              "prevalence": 0.0021551724137931034,
+              "groups": 23
+            },
+            "validation": {
+              "rows": 203,
+              "normal": 203,
+              "anomaly": 0,
+              "prevalence": 0.0,
+              "groups": 8
+            },
+            "test": {
+              "rows": 10,
+              "normal": 10,
+              "anomaly": 0,
+              "prevalence": 0.0,
+              "groups": 8
+            }
+          },
+          "span_overlap": {
+            "test_boundary": "2017-05-16T21:46:38+00:00",
+            "train_groups_extending_into_test": 1,
+            "note": "A train template can still emit lines after the first test template appears. Those later lines stay in train so the template is not copied into the test."
+          },
+          "anomaly_bearing_groups": 1,
+          "anomaly_group_placement": {
+            "train": 1
+          },
+          "near_duplicates": {
+            "train_groups": 23,
+            "test_groups": 8,
+            "exact_group_overlap": 0,
+            "jaccard_at_least_0_8": 7,
+            "jaccard_at_least_0_5": 8,
+            "median_max_jaccard": 1.0,
+            "p95_max_jaccard": 1.0,
+            "examples": [
+              {
+                "test_group": "0d09a250df4b834b37199713af893c614366e78a78652264f01a0aae2b80820a",
+                "train_group": "0a1ba72616649f89239a3528470e95b93912a57e33aa44a88f5dd930637f146c",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "00fce7f542bb33ccfe1d1dc07dce4c4d819dded8504cea5829bb4f61ca23fd13",
+                "train_group": "0a1ba72616649f89239a3528470e95b93912a57e33aa44a88f5dd930637f146c",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "48535d544e349fe62b11ce5a6ba30ff113ee4378435dd287ac5fa21f84770efe",
+                "train_group": "0a1ba72616649f89239a3528470e95b93912a57e33aa44a88f5dd930637f146c",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "74ec0ef7ea0b47513c377ccda373df02e6123e2d56dd519c68b5486fc2b9fc00",
+                "train_group": "0a1ba72616649f89239a3528470e95b93912a57e33aa44a88f5dd930637f146c",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "4007bcbe730fea41eb0daae2384c6915b3b3cc530117918cdbc6b2ec17617bf6",
+                "train_group": "0a1ba72616649f89239a3528470e95b93912a57e33aa44a88f5dd930637f146c",
+                "jaccard": 1.0
+              },
+              {
+                "test_group": "0b164989ae4afc11c48f6dbda9473237c65b9a178c8607e0570d4ba8f0f5374c",
+                "train_group": "1380b03748d05ae3878e3a05f7ded4908b466236f1841663c29aaf91dc00d12f",
+                "jaccard": 0.9411764705882353
+              },
+              {
+                "test_group": "8abbecad4ab177875ba6063d1bff9647c238ab1e4d9e687e15ac1b171d0a4e74",
+                "train_group": "937b449644a99249a8d511ff184ba134f2a5b67988f452c81c0e7414b889dd0a",
+                "jaccard": 0.8571428571428571
+              }
+            ],
+            "method": "Token Jaccard between each test template and train templates that share a rare token. Tokens present in more than 2% of train templates are ignored as candidates. A score of 0.8 or more is treated as a near-duplicate."
+          },
+          "models": [
+            {
+              "algorithm": "isolation_forest",
+              "score_kind": "anomaly_score",
+              "metrics_status": "not_evaluated",
+              "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+              "detail": "The held-out test set contains one class, so accuracy is not reported.",
+              "real_world": false,
+              "n_train": 1856,
+              "n_validation": 203,
+              "n_test": 10,
+              "threshold": {
+                "source": "default_because_validation_has_one_class",
+                "value": null,
+                "validation_f1": null,
+                "validation_precision": null,
+                "validation_recall": null,
+                "applied_value": 0.0
+              },
+              "default_threshold_value": 0.0,
+              "operating_point": null,
+              "default_threshold": null,
+              "calibration": {
+                "ece": null,
+                "brier": null,
+                "note": "The raw Isolation Forest score is not a probability, and validation could not fit a map."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 7,
+                "n_test": 2,
+                "metrics_status": "not_evaluated",
+                "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+                "metrics": null,
+                "note": "Same model and validation threshold, with near-duplicate test templates removed."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "random_forest",
+              "metrics_status": "not_evaluated",
+              "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+              "detail": "Fewer than two template groups contain any anomaly. A supervised model cannot be trained on that template and tested on a different one.",
+              "real_world": false,
+              "n_train": 1856,
+              "n_validation": 203,
+              "n_test": 10,
+              "threshold": null,
+              "operating_point": null,
+              "default_threshold": null,
+              "calibration": null,
+              "near_duplicate_excluded": null,
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "tfidf_logreg",
+              "metrics_status": "not_evaluated",
+              "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+              "detail": "Fewer than two template groups contain any anomaly. A supervised model cannot be trained on that template and tested on a different one.",
+              "real_world": false,
+              "n_train": 1856,
+              "n_validation": 203,
+              "n_test": 10,
+              "threshold": null,
+              "operating_point": null,
+              "default_threshold": null,
+              "calibration": null,
+              "near_duplicate_excluded": null,
+              "hyperparameters_locked": true
+            }
+          ],
+          "baselines": []
+        }
+      ]
+    },
+    {
+      "dataset": "hadoop",
+      "dataset_version": "loghub-zenodo-8196385-Hadoop.zip",
+      "source_url": "https://zenodo.org/records/8196385/files/Hadoop.zip?download=1",
+      "file_sha256": "79e63c6521e90ae164754a29d13e04e0c6c5e782490a7fe1e2b124f4f5737ced",
+      "label_unit": "application",
+      "label_provenance": "dataset_native",
+      "label_definition": "abnormal_label.txt marks each application Normal or a failure type (machine down, network disconnection, disk full). Failure types are binary anomalies. They are not LOW/MEDIUM/HIGH/CRITICAL labels. Applications absent from the label file are excluded.",
+      "leakage": {
+        "identifier_in_features": 1,
+        "features_available": [
+          "normalized log text for one instance or application"
+        ],
+        "features_excluded": [
+          "raw instance or application id"
+        ]
+      },
+      "feature_note": "Each labeled application is one example. At most 80 normalized lines are kept from that application before the application groups are split. Application ids are numeric and are replaced before grouping.",
+      "population": {
+        "parsed": 55,
+        "skipped": 0,
+        "rows_seen": 55,
+        "normal": 11,
+        "anomaly": 44,
+        "prevalence": 0.8,
+        "template_groups": 55
+      },
+      "mixed_label_groups": 0,
+      "positive_template_groups": 44,
+      "protocols": [
+        {
+          "name": "realistic_group",
+          "meaningful": true,
+          "reason": "Template groups were assigned with stratification on the majority label before any sampling. Each group is in train, validation, or test only.",
+          "stratified": true,
+          "full_split": {
+            "train": {
+              "groups": 33,
+              "normal": 7,
+              "anomaly": 26,
+              "rows": 33,
+              "prevalence": 0.7878787878787878
+            },
+            "validation": {
+              "groups": 11,
+              "normal": 2,
+              "anomaly": 9,
+              "rows": 11,
+              "prevalence": 0.8181818181818182
+            },
+            "test": {
+              "groups": 11,
+              "normal": 2,
+              "anomaly": 9,
+              "rows": 11,
+              "prevalence": 0.8181818181818182
+            },
+            "population": {
+              "groups": 55,
+              "normal": 11,
+              "anomaly": 44,
+              "rows": 55,
+              "prevalence": 0.8
+            }
+          },
+          "evaluated_rows": {
+            "train": {
+              "rows": 33,
+              "normal": 7,
+              "anomaly": 26,
+              "prevalence": 0.7878787878787878,
+              "groups": 33
+            },
+            "validation": {
+              "rows": 11,
+              "normal": 2,
+              "anomaly": 9,
+              "prevalence": 0.8181818181818182,
+              "groups": 11
+            },
+            "test": {
+              "rows": 11,
+              "normal": 2,
+              "anomaly": 9,
+              "prevalence": 0.8181818181818182,
+              "groups": 11
+            }
+          },
+          "span_overlap": null,
+          "anomaly_bearing_groups": 44,
+          "anomaly_group_placement": {
+            "test": 9,
+            "train": 26,
+            "validation": 9
+          },
+          "near_duplicates": {
+            "train_groups": 33,
+            "test_groups": 11,
+            "exact_group_overlap": 0,
+            "jaccard_at_least_0_8": 8,
+            "jaccard_at_least_0_5": 11,
+            "median_max_jaccard": 0.9047619047619048,
+            "p95_max_jaccard": 0.9047619047619048,
+            "examples": [
+              {
+                "test_group": "11946dc0f25000fe3a591496249fce04a72250b3175fea2846bcd4b186765e3d",
+                "train_group": "fedf87c4b87629054e46e67d8b56d90cb75d9a02b17a80ebb76bc207e02dc5db",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "6c7dbfc3256c4cd5fe96858db600d75c19b1020eb377d62e4d12703b431ade76",
+                "train_group": "fedf87c4b87629054e46e67d8b56d90cb75d9a02b17a80ebb76bc207e02dc5db",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "6dc48a2f140f2fa070060f8d5b6aa0eadfc036f6050479b2860b5d9b0377ef7d",
+                "train_group": "fedf87c4b87629054e46e67d8b56d90cb75d9a02b17a80ebb76bc207e02dc5db",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "3bec04b8053762969257a0db1cfe3a315e385428ab87929d025a17c7d1189336",
+                "train_group": "36cf24e34dc27ca77c087ef3346a9f33e7a6a615ef4629ca8512c7c05a9b1f95",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "6811fe0d256a3c709dfd7d2b11b20f837ed6adffd81230c2e8923241c2ffdf78",
+                "train_group": "99972b49ee37bfcaca45cfa67f43e9dcd9e94b2dcdbf4f279579e7a86c8df98d",
+                "jaccard": 0.8518518518518519
+              },
+              {
+                "test_group": "3e42b232a50620154acde87945c06f1ae0305b229ac08d6610ad21dba947b2a4",
+                "train_group": "fedf87c4b87629054e46e67d8b56d90cb75d9a02b17a80ebb76bc207e02dc5db",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "5e5e0ef0a39f6a07470c6b24ef5e34a7755c8e8c1b46748936d9e3d5ff44a94f",
+                "train_group": "fedf87c4b87629054e46e67d8b56d90cb75d9a02b17a80ebb76bc207e02dc5db",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "4d3e52ce8ae5a3ce2784fa7ee374f84fee2dcffd038802c619173f984a5aaa36",
+                "train_group": "fedf87c4b87629054e46e67d8b56d90cb75d9a02b17a80ebb76bc207e02dc5db",
+                "jaccard": 0.9047619047619048
+              }
+            ],
+            "method": "Token Jaccard between each test template and train templates that share a rare token. Tokens present in more than 2% of train templates are ignored as candidates. A score of 0.8 or more is treated as a near-duplicate."
+          },
+          "models": [
+            {
+              "algorithm": "isolation_forest",
+              "score_kind": "anomaly_score",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 33,
+              "n_validation": 11,
+              "n_test": 11,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": -0.19071811769526759,
+                "validation_f1": 0.9,
+                "validation_precision": 0.8181818181818182,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": -0.19071811769526759
+              },
+              "default_threshold_value": 0.0,
+              "operating_point": {
+                "accuracy": 0.7272727272727273,
+                "precision_macro": 0.4,
+                "recall_macro": 0.4444444444444444,
+                "f1_macro": 0.42105263157894735,
+                "precision_weighted": 0.6545454545454545,
+                "recall_weighted": 0.7272727272727273,
+                "f1_weighted": 0.6889952153110047,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 2
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.8,
+                    "recall": 0.8888888888888888,
+                    "f1": 0.8421052631578947,
+                    "support": 9
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      2
+                    ],
+                    [
+                      1,
+                      8
+                    ]
+                  ]
+                },
+                "roc_auc": 0.1111111111111111,
+                "pr_auc": 0.7363235529902197,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.8,
+                "recall": 0.8888888888888888,
+                "f1": 0.8421052631578947,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": -0.19071811769526759,
+                "prevalence": 0.8181818181818182
+              },
+              "default_threshold": {
+                "accuracy": 0.18181818181818182,
+                "precision_macro": 0.09090909090909091,
+                "recall_macro": 0.5,
+                "f1_macro": 0.15384615384615385,
+                "precision_weighted": 0.03305785123966942,
+                "recall_weighted": 0.18181818181818182,
+                "f1_weighted": 0.055944055944055944,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.18181818181818182,
+                    "recall": 1.0,
+                    "f1": 0.3076923076923077,
+                    "support": 2
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 9
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      2,
+                      0
+                    ],
+                    [
+                      9,
+                      0
+                    ]
+                  ]
+                },
+                "roc_auc": 0.1111111111111111,
+                "pr_auc": 0.7363235529902197,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0,
+                "threshold": 0.0,
+                "prevalence": 0.8181818181818182
+              },
+              "calibration": {
+                "ece": 0.00015014352922804175,
+                "brier": 0.14843423217861326,
+                "bins": [
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "count": 11,
+                    "mean_predicted": 0.8183319617110463,
+                    "observed_frequency": 0.8181818181818182
+                  }
+                ],
+                "note": "Platt scaling was fit on validation scores only. The raw Isolation Forest score is not a class probability."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 11,
+                "n_test": 0,
+                "metrics_status": "not_evaluated",
+                "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+                "metrics": null,
+                "note": "Every evaluated test template met the near-duplicate cutoff."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "random_forest",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 33,
+              "n_validation": 11,
+              "n_test": 11,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.025,
+                "validation_f1": 0.9,
+                "validation_precision": 0.8181818181818182,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.025
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.8181818181818182,
+                "precision_macro": 0.4090909090909091,
+                "recall_macro": 0.5,
+                "f1_macro": 0.45,
+                "precision_weighted": 0.6694214876033059,
+                "recall_weighted": 0.8181818181818182,
+                "f1_weighted": 0.7363636363636363,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 2
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.8181818181818182,
+                    "recall": 1.0,
+                    "f1": 0.9,
+                    "support": 9
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      2
+                    ],
+                    [
+                      0,
+                      9
+                    ]
+                  ]
+                },
+                "roc_auc": 0.16666666666666666,
+                "pr_auc": 0.7529902196568863,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.8181818181818182,
+                "recall": 1.0,
+                "f1": 0.9,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": 0.025,
+                "prevalence": 0.8181818181818182
+              },
+              "default_threshold": {
+                "accuracy": 0.5454545454545454,
+                "precision_macro": 0.375,
+                "recall_macro": 0.3333333333333333,
+                "f1_macro": 0.35294117647058826,
+                "precision_weighted": 0.6136363636363636,
+                "recall_weighted": 0.5454545454545454,
+                "f1_weighted": 0.5775401069518717,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 2
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.75,
+                    "recall": 0.6666666666666666,
+                    "f1": 0.7058823529411765,
+                    "support": 9
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      2
+                    ],
+                    [
+                      3,
+                      6
+                    ]
+                  ]
+                },
+                "roc_auc": 0.16666666666666666,
+                "pr_auc": 0.7529902196568863,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.75,
+                "recall": 0.6666666666666666,
+                "f1": 0.7058823529411765,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": 0.5,
+                "prevalence": 0.8181818181818182
+              },
+              "calibration": {
+                "ece": 0.42840909090909085,
+                "brier": 0.3538494318181818,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 1,
+                    "mean_predicted": 0.0875,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "count": 1,
+                    "mean_predicted": 0.15,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.30000000000000004,
+                    "upper": 0.4,
+                    "count": 1,
+                    "mean_predicted": 0.3125,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "count": 3,
+                    "mean_predicted": 0.8666666666666666,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1.0,
+                    "count": 5,
+                    "mean_predicted": 0.9724999999999999,
+                    "observed_frequency": 0.6
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 11,
+                "n_test": 0,
+                "metrics_status": "not_evaluated",
+                "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+                "metrics": null,
+                "note": "Every evaluated test template met the near-duplicate cutoff."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "tfidf_logreg",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 33,
+              "n_validation": 11,
+              "n_test": 11,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.49868548730906537,
+                "validation_f1": 0.9,
+                "validation_precision": 0.8181818181818182,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.49868548730906537
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.8181818181818182,
+                "precision_macro": 0.4090909090909091,
+                "recall_macro": 0.5,
+                "f1_macro": 0.45,
+                "precision_weighted": 0.6694214876033059,
+                "recall_weighted": 0.8181818181818182,
+                "f1_weighted": 0.7363636363636363,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 2
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.8181818181818182,
+                    "recall": 1.0,
+                    "f1": 0.9,
+                    "support": 9
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      2
+                    ],
+                    [
+                      0,
+                      9
+                    ]
+                  ]
+                },
+                "roc_auc": 0.2222222222222222,
+                "pr_auc": 0.8097643097643099,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.8181818181818182,
+                "recall": 1.0,
+                "f1": 0.9,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": 0.49868548730906537,
+                "prevalence": 0.8181818181818182
+              },
+              "default_threshold": {
+                "accuracy": 0.36363636363636365,
+                "precision_macro": 0.3333333333333333,
+                "recall_macro": 0.2222222222222222,
+                "f1_macro": 0.26666666666666666,
+                "precision_weighted": 0.5454545454545454,
+                "recall_weighted": 0.36363636363636365,
+                "f1_weighted": 0.43636363636363634,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 2
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.6666666666666666,
+                    "recall": 0.4444444444444444,
+                    "f1": 0.5333333333333333,
+                    "support": 9
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      2
+                    ],
+                    [
+                      5,
+                      4
+                    ]
+                  ]
+                },
+                "roc_auc": 0.2222222222222222,
+                "pr_auc": 0.8097643097643099,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.6666666666666666,
+                "recall": 0.4444444444444444,
+                "f1": 0.5333333333333333,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": 0.5,
+                "prevalence": 0.8181818181818182
+              },
+              "calibration": {
+                "ece": 0.31833161584822545,
+                "brier": 0.2503850105086572,
+                "bins": [
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "count": 5,
+                    "mean_predicted": 0.49883382850666447,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6000000000000001,
+                    "count": 6,
+                    "mean_predicted": 0.5006971805226996,
+                    "observed_frequency": 0.6666666666666666
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 11,
+                "n_test": 0,
+                "metrics_status": "not_evaluated",
+                "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+                "metrics": null,
+                "note": "Every evaluated test template met the near-duplicate cutoff."
+              },
+              "hyperparameters_locked": true
+            }
+          ],
+          "baselines": [
+            {
+              "name": "severity_rank_only",
+              "detail": "Logistic regression on the severity rank alone. The level word is available to the text models.",
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.5,
+                "validation_f1": 0.9,
+                "validation_precision": 0.8181818181818182,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.5
+              },
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "operating_point": {
+                "accuracy": 0.8181818181818182,
+                "precision_macro": 0.4090909090909091,
+                "recall_macro": 0.5,
+                "f1_macro": 0.45,
+                "precision_weighted": 0.6694214876033059,
+                "recall_weighted": 0.8181818181818182,
+                "f1_weighted": 0.7363636363636363,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 2
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.8181818181818182,
+                    "recall": 1.0,
+                    "f1": 0.9,
+                    "support": 9
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      2
+                    ],
+                    [
+                      0,
+                      9
+                    ]
+                  ]
+                },
+                "roc_auc": 0.5,
+                "pr_auc": 0.8181818181818182,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.8181818181818182,
+                "recall": 1.0,
+                "f1": 0.9,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": 0.5,
+                "prevalence": 0.8181818181818182
+              },
+              "real_world": true
+            }
+          ]
+        },
+        {
+          "name": "chronological_group",
+          "meaningful": true,
+          "reason": "Each template is assigned by its earliest timestamp. Train is the earliest groups, validation the next block, and test the latest groups. A template that starts during training never appears in the test.",
+          "stratified": false,
+          "full_split": {
+            "train": {
+              "groups": 33,
+              "normal": 8,
+              "anomaly": 25,
+              "rows": 33,
+              "prevalence": 0.7575757575757576
+            },
+            "validation": {
+              "groups": 11,
+              "normal": 2,
+              "anomaly": 9,
+              "rows": 11,
+              "prevalence": 0.8181818181818182
+            },
+            "test": {
+              "groups": 11,
+              "normal": 1,
+              "anomaly": 10,
+              "rows": 11,
+              "prevalence": 0.9090909090909091
+            },
+            "population": {
+              "groups": 55,
+              "normal": 11,
+              "anomaly": 44,
+              "rows": 55,
+              "prevalence": 0.8
+            }
+          },
+          "evaluated_rows": {
+            "train": {
+              "rows": 33,
+              "normal": 8,
+              "anomaly": 25,
+              "prevalence": 0.7575757575757576,
+              "groups": 33
+            },
+            "validation": {
+              "rows": 11,
+              "normal": 2,
+              "anomaly": 9,
+              "prevalence": 0.8181818181818182,
+              "groups": 11
+            },
+            "test": {
+              "rows": 11,
+              "normal": 1,
+              "anomaly": 10,
+              "prevalence": 0.9090909090909091,
+              "groups": 11
+            }
+          },
+          "span_overlap": {
+            "test_boundary": "2015-10-19T14:41:47+00:00",
+            "train_groups_extending_into_test": 0,
+            "note": "A train template can still emit lines after the first test template appears. Those later lines stay in train so the template is not copied into the test."
+          },
+          "anomaly_bearing_groups": 44,
+          "anomaly_group_placement": {
+            "train": 25,
+            "validation": 9,
+            "test": 10
+          },
+          "near_duplicates": {
+            "train_groups": 33,
+            "test_groups": 11,
+            "exact_group_overlap": 0,
+            "jaccard_at_least_0_8": 8,
+            "jaccard_at_least_0_5": 11,
+            "median_max_jaccard": 0.9047619047619048,
+            "p95_max_jaccard": 0.9047619047619048,
+            "examples": [
+              {
+                "test_group": "11946dc0f25000fe3a591496249fce04a72250b3175fea2846bcd4b186765e3d",
+                "train_group": "efabf7c7f100268d945614b35142051560d1e75e08ea06ee1d63ee8785aaf55b",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "4a281ef66715a1fa72b40f3e0896f9b13e12e6ff8eea3803ba86b01318daef28",
+                "train_group": "efabf7c7f100268d945614b35142051560d1e75e08ea06ee1d63ee8785aaf55b",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "fedf87c4b87629054e46e67d8b56d90cb75d9a02b17a80ebb76bc207e02dc5db",
+                "train_group": "efabf7c7f100268d945614b35142051560d1e75e08ea06ee1d63ee8785aaf55b",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "12fd520095d4fa581e45a77f13d3f67909dacfe5b725acb1d1289c0c9e68c26a",
+                "train_group": "efabf7c7f100268d945614b35142051560d1e75e08ea06ee1d63ee8785aaf55b",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "125c0544ca225de89e77bb3de888e4da55dc8428e051649aaab587e2bb5daf40",
+                "train_group": "efabf7c7f100268d945614b35142051560d1e75e08ea06ee1d63ee8785aaf55b",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "65a77f72255db0834f38769abbba5b208b9922c540ac1146f5bc85db72da60f2",
+                "train_group": "bcfca348afb547bade384750bcc0f82622c3eede708688836e26e99ef5670805",
+                "jaccard": 0.8518518518518519
+              },
+              {
+                "test_group": "f50c46828aabb0d2ff4b4c26ac3eb2c10a604bfb8456a9611207dc018c9681b6",
+                "train_group": "efabf7c7f100268d945614b35142051560d1e75e08ea06ee1d63ee8785aaf55b",
+                "jaccard": 0.9047619047619048
+              },
+              {
+                "test_group": "f5cb52ef6fed6579fe34b451aa88af7af6f011f74559a2b35019e6f81aa391db",
+                "train_group": "efabf7c7f100268d945614b35142051560d1e75e08ea06ee1d63ee8785aaf55b",
+                "jaccard": 0.9047619047619048
+              }
+            ],
+            "method": "Token Jaccard between each test template and train templates that share a rare token. Tokens present in more than 2% of train templates are ignored as candidates. A score of 0.8 or more is treated as a near-duplicate."
+          },
+          "models": [
+            {
+              "algorithm": "isolation_forest",
+              "score_kind": "anomaly_score",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 33,
+              "n_validation": 11,
+              "n_test": 11,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": -0.18681459216487395,
+                "validation_f1": 0.9,
+                "validation_precision": 0.8181818181818182,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": -0.18681459216487395
+              },
+              "default_threshold_value": 0.0,
+              "operating_point": {
+                "accuracy": 0.9090909090909091,
+                "precision_macro": 0.75,
+                "recall_macro": 0.95,
+                "f1_macro": 0.8070175438596491,
+                "precision_weighted": 0.9545454545454546,
+                "recall_weighted": 0.9090909090909091,
+                "f1_weighted": 0.9218500797448165,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.5,
+                    "recall": 1.0,
+                    "f1": 0.6666666666666666,
+                    "support": 1
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 1.0,
+                    "recall": 0.9,
+                    "f1": 0.9473684210526315,
+                    "support": 10
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      9
+                    ]
+                  ]
+                },
+                "roc_auc": 1.0,
+                "pr_auc": 0.9999999999999999,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 1.0,
+                "recall": 0.9,
+                "f1": 0.9473684210526315,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0,
+                "threshold": -0.18681459216487395,
+                "prevalence": 0.9090909090909091
+              },
+              "default_threshold": {
+                "accuracy": 0.09090909090909091,
+                "precision_macro": 0.045454545454545456,
+                "recall_macro": 0.5,
+                "f1_macro": 0.08333333333333333,
+                "precision_weighted": 0.008264462809917356,
+                "recall_weighted": 0.09090909090909091,
+                "f1_weighted": 0.01515151515151515,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.09090909090909091,
+                    "recall": 1.0,
+                    "f1": 0.16666666666666666,
+                    "support": 1
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 10
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      10,
+                      0
+                    ]
+                  ]
+                },
+                "roc_auc": 1.0,
+                "pr_auc": 0.9999999999999999,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0,
+                "threshold": 0.0,
+                "prevalence": 0.9090909090909091
+              },
+              "calibration": {
+                "ece": 0.09073777162043228,
+                "brier": 0.09090098000780701,
+                "bins": [
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "count": 11,
+                    "mean_predicted": 0.8183531374704768,
+                    "observed_frequency": 0.9090909090909091
+                  }
+                ],
+                "note": "Platt scaling was fit on validation scores only. The raw Isolation Forest score is not a class probability."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 11,
+                "n_test": 0,
+                "metrics_status": "not_evaluated",
+                "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+                "metrics": null,
+                "note": "Every evaluated test template met the near-duplicate cutoff."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "random_forest",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 33,
+              "n_validation": 11,
+              "n_test": 11,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.175,
+                "validation_f1": 0.9473684210526316,
+                "validation_precision": 0.9,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.175
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.8181818181818182,
+                "precision_macro": 0.45,
+                "recall_macro": 0.45,
+                "f1_macro": 0.45,
+                "precision_weighted": 0.8181818181818182,
+                "recall_weighted": 0.8181818181818182,
+                "f1_weighted": 0.8181818181818182,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 1
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9,
+                    "recall": 0.9,
+                    "f1": 0.9,
+                    "support": 10
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      1
+                    ],
+                    [
+                      1,
+                      9
+                    ]
+                  ]
+                },
+                "roc_auc": 0.8,
+                "pr_auc": 0.9809090909090908,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.9,
+                "recall": 0.9,
+                "f1": 0.9,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": 0.175,
+                "prevalence": 0.9090909090909091
+              },
+              "default_threshold": {
+                "accuracy": 0.5454545454545454,
+                "precision_macro": 0.5833333333333334,
+                "recall_macro": 0.75,
+                "f1_macro": 0.47619047619047616,
+                "precision_weighted": 0.9242424242424242,
+                "recall_weighted": 0.5454545454545454,
+                "f1_weighted": 0.632034632034632,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.16666666666666666,
+                    "recall": 1.0,
+                    "f1": 0.2857142857142857,
+                    "support": 1
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 1.0,
+                    "recall": 0.5,
+                    "f1": 0.6666666666666666,
+                    "support": 10
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      5,
+                      5
+                    ]
+                  ]
+                },
+                "roc_auc": 0.8,
+                "pr_auc": 0.9809090909090908,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 1.0,
+                "recall": 0.5,
+                "f1": 0.6666666666666666,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 0.0,
+                "threshold": 0.5,
+                "prevalence": 0.9090909090909091
+              },
+              "calibration": {
+                "ece": 0.4000000000000001,
+                "brier": 0.23678977272727272,
+                "bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "count": 1,
+                    "mean_predicted": 0.05,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.30000000000000004,
+                    "count": 1,
+                    "mean_predicted": 0.2125,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.30000000000000004,
+                    "upper": 0.4,
+                    "count": 1,
+                    "mean_predicted": 0.3875,
+                    "observed_frequency": 0.0
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "count": 3,
+                    "mean_predicted": 0.4749999999999999,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "count": 4,
+                    "mean_predicted": 0.84375,
+                    "observed_frequency": 1.0
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1.0,
+                    "count": 1,
+                    "mean_predicted": 0.925,
+                    "observed_frequency": 1.0
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 11,
+                "n_test": 0,
+                "metrics_status": "not_evaluated",
+                "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+                "metrics": null,
+                "note": "Every evaluated test template met the near-duplicate cutoff."
+              },
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "tfidf_logreg",
+              "score_kind": "class_probability",
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "detail": "Scores are binary normal versus anomaly. They do not validate LOW, MEDIUM, HIGH, or CRITICAL severity.",
+              "real_world": true,
+              "n_train": 33,
+              "n_validation": 11,
+              "n_test": 11,
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.48996635192469995,
+                "validation_f1": 0.9,
+                "validation_precision": 0.8181818181818182,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.48996635192469995
+              },
+              "default_threshold_value": 0.5,
+              "operating_point": {
+                "accuracy": 0.9090909090909091,
+                "precision_macro": 0.45454545454545453,
+                "recall_macro": 0.5,
+                "f1_macro": 0.47619047619047616,
+                "precision_weighted": 0.8264462809917354,
+                "recall_weighted": 0.9090909090909091,
+                "f1_weighted": 0.8658008658008658,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 1
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9090909090909091,
+                    "recall": 1.0,
+                    "f1": 0.9523809523809523,
+                    "support": 10
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      1
+                    ],
+                    [
+                      0,
+                      10
+                    ]
+                  ]
+                },
+                "roc_auc": 0.75,
+                "pr_auc": 0.9609090909090908,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.9090909090909091,
+                "recall": 1.0,
+                "f1": 0.9523809523809523,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": 0.48996635192469995,
+                "prevalence": 0.9090909090909091
+              },
+              "default_threshold": {
+                "accuracy": 0.9090909090909091,
+                "precision_macro": 0.45454545454545453,
+                "recall_macro": 0.5,
+                "f1_macro": 0.47619047619047616,
+                "precision_weighted": 0.8264462809917354,
+                "recall_weighted": 0.9090909090909091,
+                "f1_weighted": 0.8658008658008658,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 1
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9090909090909091,
+                    "recall": 1.0,
+                    "f1": 0.9523809523809523,
+                    "support": 10
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      1
+                    ],
+                    [
+                      0,
+                      10
+                    ]
+                  ]
+                },
+                "roc_auc": 0.75,
+                "pr_auc": 0.9609090909090908,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.9090909090909091,
+                "recall": 1.0,
+                "f1": 0.9523809523809523,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": 0.5,
+                "prevalence": 0.9090909090909091
+              },
+              "calibration": {
+                "ece": 0.4058145846624647,
+                "brier": 0.2473239093658549,
+                "bins": [
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6000000000000001,
+                    "count": 11,
+                    "mean_predicted": 0.5032763244284444,
+                    "observed_frequency": 0.9090909090909091
+                  }
+                ],
+                "note": "Reliability of P(anomaly) on the test rows. The threshold was not used."
+              },
+              "near_duplicate_excluded": {
+                "excluded_groups": 11,
+                "n_test": 0,
+                "metrics_status": "not_evaluated",
+                "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+                "metrics": null,
+                "note": "Every evaluated test template met the near-duplicate cutoff."
+              },
+              "hyperparameters_locked": true
+            }
+          ],
+          "baselines": [
+            {
+              "name": "severity_rank_only",
+              "detail": "Logistic regression on the severity rank alone. The level word is available to the text models.",
+              "threshold": {
+                "source": "validation_max_anomaly_f1",
+                "value": 0.520814067323107,
+                "validation_f1": 0.9,
+                "validation_precision": 0.8181818181818182,
+                "validation_recall": 1.0,
+                "tie_break": "Higher anomaly F1, then higher precision, then a higher threshold.",
+                "applied_value": 0.520814067323107
+              },
+              "metrics_status": "evaluated",
+              "metrics_note": null,
+              "operating_point": {
+                "accuracy": 0.9090909090909091,
+                "precision_macro": 0.45454545454545453,
+                "recall_macro": 0.5,
+                "f1_macro": 0.47619047619047616,
+                "precision_weighted": 0.8264462809917354,
+                "recall_weighted": 0.9090909090909091,
+                "f1_weighted": 0.8658008658008658,
+                "per_class": [
+                  {
+                    "label": "normal",
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0,
+                    "support": 1
+                  },
+                  {
+                    "label": "anomaly",
+                    "precision": 0.9090909090909091,
+                    "recall": 1.0,
+                    "f1": 0.9523809523809523,
+                    "support": 10
+                  }
+                ],
+                "confusion_matrix": {
+                  "labels": [
+                    "normal",
+                    "anomaly"
+                  ],
+                  "matrix": [
+                    [
+                      0,
+                      1
+                    ],
+                    [
+                      0,
+                      10
+                    ]
+                  ]
+                },
+                "roc_auc": 0.5,
+                "pr_auc": 0.9090909090909091,
+                "roc_auc_note": null,
+                "pr_auc_note": null,
+                "support": 11,
+                "precision": 0.9090909090909091,
+                "recall": 1.0,
+                "f1": 0.9523809523809523,
+                "positive_label": "anomaly",
+                "fp_per_1000_normal": 1000.0,
+                "threshold": 0.520814067323107,
+                "prevalence": 0.9090909090909091
+              },
+              "real_world": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dataset": "thunderbird",
+      "dataset_version": "loghub-Thunderbird_2k",
+      "source_url": "https://raw.githubusercontent.com/logpai/loghub/master/Thunderbird/Thunderbird_2k.log",
+      "file_sha256": "903bbfa61c34d4803e4adcb0d726ff2eeb9a2e11971243269a2035fa6c3bbeb0",
+      "label_unit": "line",
+      "label_provenance": "dataset_native",
+      "label_definition": "Thunderbird uses the same first-token alert label as BGL. This file is the 2,000-line sample, not the full corpus.",
+      "population": {
+        "parsed": 2000,
+        "skipped": 0,
+        "rows_seen": 2000,
+        "normal": 2000,
+        "anomaly": 0,
+        "prevalence": 0.0,
+        "template_groups": 824
+      },
+      "leakage": {
+        "alert_token_in_message_body": 0,
+        "anomaly_rows": 0,
+        "identifier_in_features": 0,
+        "severity_prevalence": [
+          {
+            "severity_rank": 0,
+            "normal": 1998,
+            "anomaly": 0,
+            "prevalence": 0.0
+          },
+          {
+            "severity_rank": 2,
+            "normal": 2,
+            "anomaly": 0,
+            "prevalence": 0.0
+          }
+        ],
+        "features_available": [
+          "component, level word, and message text"
+        ],
+        "features_excluded": [
+          "alert token"
+        ]
+      },
+      "positive_template_groups": 0,
+      "mixed_label_groups": 0,
+      "protocols": [
+        {
+          "name": "realistic_group",
+          "meaningful": true,
+          "reason": "The labeled rows do not contain both classes, so accuracy is not computed.",
+          "models": [
+            {
+              "algorithm": "isolation_forest",
+              "metrics_status": "not_evaluated",
+              "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+              "detail": "The labeled rows do not contain both classes, so accuracy is not computed.",
+              "real_world": false,
+              "n_train": 0,
+              "n_validation": 0,
+              "n_test": 0,
+              "threshold": null,
+              "operating_point": null,
+              "default_threshold": null,
+              "calibration": null,
+              "near_duplicate_excluded": null,
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "random_forest",
+              "metrics_status": "not_evaluated",
+              "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+              "detail": "The labeled rows do not contain both classes, so accuracy is not computed.",
+              "real_world": false,
+              "n_train": 0,
+              "n_validation": 0,
+              "n_test": 0,
+              "threshold": null,
+              "operating_point": null,
+              "default_threshold": null,
+              "calibration": null,
+              "near_duplicate_excluded": null,
+              "hyperparameters_locked": true
+            },
+            {
+              "algorithm": "tfidf_logreg",
+              "metrics_status": "not_evaluated",
+              "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+              "detail": "The labeled rows do not contain both classes, so accuracy is not computed.",
+              "real_world": false,
+              "n_train": 0,
+              "n_validation": 0,
+              "n_test": 0,
+              "threshold": null,
+              "operating_point": null,
+              "default_threshold": null,
+              "calibration": null,
+              "near_duplicate_excluded": null,
+              "hyperparameters_locked": true
+            }
+          ],
+          "baselines": [],
+          "full_split": null,
+          "evaluated_rows": null,
+          "near_duplicates": null
+        },
+        {
+          "name": "chronological_group",
+          "meaningful": false,
+          "reason": "Fewer than 95% of parsed rows have a timestamp, so a time split would not be a future holdout.",
+          "models": [],
+          "baselines": []
+        }
+      ]
+    },
+    {
+      "dataset": "linux",
+      "dataset_version": "loghub-Linux_2k",
+      "label_unit": "line",
+      "label_provenance": "none",
+      "label_definition": "Loghub's dataset table leaves Linux unlabeled.",
+      "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+      "real_world": false,
+      "detail": "Linux_2k has no verified ground truth. LOW, MEDIUM, HIGH, and CRITICAL are estimated anomaly-score bands, not validated four-class severity.",
+      "protocols": []
+    }
+  ]
+}

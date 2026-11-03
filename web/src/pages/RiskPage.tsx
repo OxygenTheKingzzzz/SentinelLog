@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ApiError, api, type RiskModelResult } from "@/lib/api";
+import { ApiError, api, type RealisticModel, type RiskModelResult } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
 import { useSelection } from "@/store/selection";
 import { Empty, ErrorNote, Loading } from "@/components/States";
@@ -24,6 +24,7 @@ export function RiskPage() {
   const sourceId = useSelection((state) => state.sourceId);
   const client = useQueryClient();
   const experiments = useQuery({ queryKey: ["risk-experiments"], queryFn: api.riskExperiments });
+  const realistic = useQuery({ queryKey: ["risk-realistic"], queryFn: api.riskRealistic });
   const distribution = useQuery({
     queryKey: ["risk-distribution", sourceId],
     queryFn: () => api.riskDistribution(sourceId),
@@ -165,7 +166,7 @@ export function RiskPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Model comparison</CardTitle>
+          <CardTitle>Benchmark comparison (rebalanced sample)</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -204,6 +205,11 @@ export function RiskPage() {
               )}
             </tbody>
           </table>
+          <p className="mt-3 text-[11px] text-mute">
+            This table keeps the original benchmark. BGL and HDFS were drawn round-robin by class
+            before the split, so their anomaly rate is much higher than the corpus. It is not the
+            realistic-prevalence result.
+          </p>
           <div className="mt-3 space-y-2 text-[11px] text-mute">
             {published.map((experiment) => (
               <p key={experiment.dataset}>
@@ -214,6 +220,105 @@ export function RiskPage() {
               </p>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Realistic prevalence and chronological holdout</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {realistic.isLoading ? <Loading label="Loading realistic evaluations" /> : null}
+          {realistic.data && realistic.data.experiments.length === 0 ? (
+            <Empty>{realistic.data.detail ?? "Realistic prevalence results have not been generated."}</Empty>
+          ) : null}
+          <p className="mb-2 text-[11px] text-mute">
+            Groups were assigned before sampling. Validation chose the threshold. Test rows keep the
+            holdout's own anomaly rate. These binary scores do not validate four-class severity.
+          </p>
+          <table className="w-full text-left text-xs">
+            <thead className="text-mute">
+              <tr>
+                <th className="px-2 py-1">Dataset</th>
+                <th className="px-2 py-1">Protocol</th>
+                <th className="px-2 py-1">Model</th>
+                <th className="px-2 py-1">Test prevalence</th>
+                <th className="px-2 py-1">Accuracy</th>
+                <th className="px-2 py-1">Precision</th>
+                <th className="px-2 py-1">Recall</th>
+                <th className="px-2 py-1">F1</th>
+                <th className="px-2 py-1">ROC-AUC</th>
+                <th className="px-2 py-1">PR-AUC</th>
+                <th className="px-2 py-1">FP / 1,000 normal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(realistic.data?.experiments ?? []).flatMap((experiment) => {
+                if (experiment.protocols.length === 0) {
+                  return [
+                    <tr key={`${experiment.dataset}-empty`} className="border-t border-line">
+                      <td className="px-2 py-1">{experiment.dataset}</td>
+                      <td className="px-2 py-1" colSpan={10}>
+                        {experiment.metrics_note ?? experiment.detail}
+                      </td>
+                    </tr>,
+                  ];
+                }
+                return experiment.protocols.flatMap((protocol) => {
+                  if (!protocol.meaningful || protocol.models.length === 0) {
+                    return [
+                      <tr key={`${experiment.dataset}-${protocol.name}-skipped`} className="border-t border-line">
+                        <td className="px-2 py-1">{experiment.dataset}</td>
+                        <td className="px-2 py-1">{protocol.name}</td>
+                        <td className="px-2 py-1" colSpan={9}>
+                          {protocol.reason}
+                        </td>
+                      </tr>,
+                    ];
+                  }
+                  return protocol.models.map((model) => {
+                    if (!model.real_world || model.operating_point == null) {
+                      const reason = [model.metrics_note ?? NOT_EVALUATED, model.detail]
+                        .filter((part): part is string => Boolean(part))
+                        .filter((part, index, all) => all.indexOf(part) === index)
+                        .join(" ");
+                      return (
+                        <tr
+                          key={`${experiment.dataset}-${protocol.name}-${model.algorithm}`}
+                          className="border-t border-line"
+                        >
+                          <td className="px-2 py-1">{experiment.dataset}</td>
+                          <td className="px-2 py-1">{protocol.name}</td>
+                          <td className="px-2 py-1">{model.algorithm}</td>
+                          <td className="px-2 py-1" colSpan={8}>
+                            {reason}
+                          </td>
+                        </tr>
+                      );
+                    }
+                    return (
+                      <tr
+                        key={`${experiment.dataset}-${protocol.name}-${model.algorithm}`}
+                        className="border-t border-line"
+                      >
+                        <td className="px-2 py-1">{experiment.dataset}</td>
+                        <td className="px-2 py-1">{protocol.name}</td>
+                        <td className="px-2 py-1">{model.algorithm}</td>
+                        <td className="px-2 py-1">{realisticMetric(model, "prevalence")}</td>
+                        <td className="px-2 py-1">{realisticMetric(model, "accuracy")}</td>
+                        <td className="px-2 py-1">{realisticMetric(model, "precision")}</td>
+                        <td className="px-2 py-1">{realisticMetric(model, "recall")}</td>
+                        <td className="px-2 py-1">{realisticMetric(model, "f1")}</td>
+                        <td className="px-2 py-1">{realisticMetric(model, "roc_auc")}</td>
+                        <td className="px-2 py-1">{realisticMetric(model, "pr_auc")}</td>
+                        <td className="px-2 py-1">{realisticMetric(model, "fp_per_1000_normal")}</td>
+                      </tr>
+                    );
+                  });
+                });
+              })}
+            </tbody>
+          </table>
         </CardContent>
       </Card>
 
@@ -338,6 +443,16 @@ export function RiskPage() {
       </Card>
     </div>
   );
+}
+
+function realisticMetric(
+  model: RealisticModel,
+  key: "accuracy" | "precision" | "recall" | "f1" | "roc_auc" | "pr_auc" | "fp_per_1000_normal" | "prevalence",
+) {
+  if (!model.real_world || model.operating_point == null) return NOT_EVALUATED;
+  const value = model.operating_point[key];
+  if (value == null) return "—";
+  return value.toFixed(3);
 }
 
 function populationText(population: Record<string, number | string>) {

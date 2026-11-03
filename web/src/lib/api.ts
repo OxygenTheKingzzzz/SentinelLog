@@ -545,6 +545,7 @@ export const api = {
   stopCollector: (id: string) =>
     request<LiveCollector>(`/api/v1/live/collectors/${id}/stop`, { method: "POST" }),
   riskExperiments: () => request<RiskExperiments>("/api/v1/risk/experiments"),
+  riskRealistic: () => request<RealisticResults>("/api/v1/risk/realistic"),
   riskDistribution: (sourceId?: string | null) =>
     request<RiskDistribution>(`/api/v1/risk/distribution${queryString({ source_id: sourceId })}`),
   riskModels: () => request<RiskModel[]>("/api/v1/risk/models"),
@@ -627,6 +628,57 @@ export interface RiskExperiment {
 export interface RiskExperiments {
   generated_at: string | null;
   experiments: RiskExperiment[];
+}
+
+export interface RealisticPoint {
+  accuracy?: number;
+  precision?: number;
+  recall?: number;
+  f1?: number;
+  roc_auc?: number | null;
+  pr_auc?: number | null;
+  fp_per_1000_normal?: number | null;
+  prevalence?: number | null;
+  confusion_matrix?: { labels: string[]; matrix: number[][] };
+}
+
+export interface RealisticModel {
+  algorithm: string;
+  metrics_status: string;
+  metrics_note: string | null;
+  detail: string | null;
+  real_world: boolean;
+  n_train: number;
+  n_validation: number;
+  n_test: number;
+  operating_point: RealisticPoint | null;
+  threshold?: { applied_value?: number | null; source?: string } | null;
+}
+
+export interface RealisticProtocol {
+  name: string;
+  meaningful: boolean;
+  reason?: string;
+  models: RealisticModel[];
+  evaluated_rows?: {
+    test?: { prevalence?: number | null; rows?: number; anomaly?: number };
+  } | null;
+}
+
+export interface RealisticExperiment {
+  dataset: string;
+  label_unit?: string;
+  label_definition?: string;
+  metrics_note?: string | null;
+  detail?: string | null;
+  population?: Record<string, number | string | null>;
+  protocols: RealisticProtocol[];
+}
+
+export interface RealisticResults {
+  generated_at: string | null;
+  detail?: string;
+  experiments: RealisticExperiment[];
 }
 
 export interface RiskDistribution {

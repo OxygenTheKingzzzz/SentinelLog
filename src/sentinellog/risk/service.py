@@ -40,6 +40,7 @@ from sentinellog.risk.records import Example
 from sentinellog.risk.textnorm import group_key, keyword_severity
 
 _PUBLISHED = Path(__file__).resolve().parent / "published_results.json"
+_REALISTIC = Path(__file__).resolve().parent / "realistic_results.json"
 
 
 class RiskError(Exception):
@@ -67,6 +68,19 @@ def published_experiments() -> dict[str, object]:
     import json
 
     return json.loads(_PUBLISHED.read_text(encoding="utf-8"))
+
+
+def realistic_experiments() -> dict[str, object]:
+    if not _REALISTIC.is_file():
+        return {
+            "generated_at": None,
+            "generator": None,
+            "experiments": [],
+            "detail": "Realistic prevalence results have not been generated.",
+        }
+    import json
+
+    return json.loads(_REALISTIC.read_text(encoding="utf-8"))
 
 
 def _audit(session: Session, *, actor: str, action: str, entity_id: str, details: dict) -> None:

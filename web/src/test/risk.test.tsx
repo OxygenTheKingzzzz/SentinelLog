@@ -20,6 +20,72 @@ vi.mock("recharts", () => {
 
 vi.mock("@/lib/api", () => ({
   api: {
+    riskRealistic: () =>
+      Promise.resolve({
+        generated_at: "2026-11-03T12:00:00Z",
+        experiments: [
+          {
+            dataset: "bgl",
+            protocols: [
+              {
+                name: "realistic_group",
+                meaningful: true,
+                models: [
+                  {
+                    algorithm: "random_forest",
+                    metrics_status: "evaluated",
+                    metrics_note: null,
+                    detail: "binary",
+                    real_world: true,
+                    n_train: 100,
+                    n_validation: 40,
+                    n_test: 80,
+                    operating_point: {
+                      accuracy: 0.91,
+                      precision: 0.4,
+                      recall: 0.5,
+                      f1: 0.44,
+                      roc_auc: 0.88,
+                      pr_auc: 0.42,
+                      fp_per_1000_normal: 12.5,
+                      prevalence: 0.074,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            dataset: "openstack",
+            protocols: [
+              {
+                name: "realistic_group",
+                meaningful: true,
+                models: [
+                  {
+                    algorithm: "random_forest",
+                    metrics_status: "not_evaluated",
+                    metrics_note: "Not evaluated — ground-truth labels required",
+                    detail:
+                      "Fewer than two template groups contain any anomaly. A supervised model cannot be trained on that template and tested on a different one.",
+                    real_world: false,
+                    n_train: 10,
+                    n_validation: 4,
+                    n_test: 4,
+                    operating_point: null,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            dataset: "linux",
+            metrics_note: "Not evaluated — ground-truth labels required",
+            detail: "Estimated bands are not validated four-class severity.",
+            protocols: [],
+          },
+        ],
+      }),
     riskExperiments: () =>
       Promise.resolve({
         generated_at: "2026-11-03T11:00:00Z",
@@ -153,6 +219,10 @@ describe("RiskPage", () => {
     expect(screen.getAllByText("Not evaluated — ground-truth labels required").length).toBeGreaterThan(0);
     expect(screen.getAllByText("bgl").length).toBeGreaterThan(0);
     expect(screen.getByText("Confusion matrix · bgl · tfidf_logreg")).toBeInTheDocument();
+    expect(screen.getByText("Realistic prevalence and chronological holdout")).toBeInTheDocument();
+    expect(screen.getAllByText("realistic_group").length).toBeGreaterThan(0);
+    expect(screen.getByText("12.500")).toBeInTheDocument();
+    expect(screen.getByText(/Fewer than two template groups contain any anomaly/)).toBeInTheDocument();
     expect(screen.getByText("20")).toBeInTheDocument();
     expect(screen.getByText("authentication failure")).toBeInTheDocument();
   });
