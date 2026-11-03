@@ -322,7 +322,7 @@ def public_settings(db: Session = Depends(get_db)) -> dict[str, object]:
         "max_upload_bytes": settings.max_upload_bytes,
         "source_year": settings.source_year,
         "anomaly_artifact_dir": settings.anomaly_artifact_dir,
-        "live_collection": False,
+        "live_collection": True,
         "pdf_export": False,
         "database": {
             "driver": url.drivername,

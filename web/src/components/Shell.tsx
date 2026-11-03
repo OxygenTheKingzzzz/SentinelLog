@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,18 @@ const links = [
 ] as const;
 
 export function Shell() {
+  const client = useQueryClient();
   const sources = useQuery({ queryKey: ["sources"], queryFn: api.sources });
+  useEffect(() => {
+    const stream = new EventSource("/api/v1/live/stream");
+    stream.onmessage = () => {
+      void client.invalidateQueries({ queryKey: ["overview"] });
+      void client.invalidateQueries({ queryKey: ["events"] });
+      void client.invalidateQueries({ queryKey: ["live-collectors"] });
+      void client.invalidateQueries({ queryKey: ["jobs"] });
+    };
+    return () => stream.close();
+  }, [client]);
   const sourceId = useSelection((state) => state.sourceId);
   const setSourceId = useSelection((state) => state.setSourceId);
   const picks = useSelection((state) => state.alertIds.length + state.eventIds.length);

@@ -131,6 +131,7 @@ def overview(session: Session, source_id: UUID | None) -> dict[str, object] | No
                 "name": source.name,
                 "hostname": source.hostname,
                 "source_year": source.source_year,
+                "kind": source.kind,
                 "events": count,
                 "alerts": alert_count,
             }

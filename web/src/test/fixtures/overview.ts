@@ -34,6 +34,7 @@ export const overviewFixture = {
       name: "fixture-source",
       hostname: "lab",
       source_year: 2005,
+      kind: "historical",
       events: 42,
       alerts: 7,
     },

@@ -84,10 +84,14 @@ def test_api_ingests_real_files_and_dedups(client):
     assert ml_body["ground_truth"] is False
     assert ml_body["metrics"] is None
     assert "ROC-AUC are not computed" in ml_body["metrics_note"]
-    for path in ("/incidents", "/reports", "/live"):
+    for path in ("/incidents", "/reports"):
         status = client.get(f"/api/v1{path}/status")
         assert status.status_code == 200
         assert status.json()["implemented"] is False
+    live = client.get("/api/v1/live/status")
+    assert live.status_code == 200
+    assert live.json()["implemented"] is True
+    assert live.json()["journald_available"] is False
 
 
 def test_api_rejects_unsafe_uploads(client, monkeypatch):

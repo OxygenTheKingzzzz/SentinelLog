@@ -20,6 +20,7 @@ class SourceOut(BaseModel):
     description: str | None
     hostname: str | None
     source_year: int | None
+    kind: str
     created_at: datetime
     updated_at: datetime
 

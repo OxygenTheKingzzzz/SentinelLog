@@ -13,6 +13,10 @@ const tones: Record<string, string> = {
   completed: "bg-ok/15 text-ok",
   failed: "bg-danger/15 text-danger",
   running: "bg-amber/15 text-amber",
+  live: "bg-cyan/15 text-cyan",
+  waiting: "bg-amber/15 text-amber",
+  stopped: "bg-mute/15 text-mute",
+  error: "bg-danger/15 text-danger",
 };
 
 export function Badge({ value }: { value: string }) {

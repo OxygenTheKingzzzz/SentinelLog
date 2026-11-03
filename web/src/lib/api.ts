@@ -46,6 +46,7 @@ export interface Source {
   description: string | null;
   hostname: string | null;
   source_year: number | null;
+  kind: string;
   created_at: string;
   updated_at: string;
 }
@@ -140,6 +141,7 @@ export interface Overview {
     name: string;
     hostname: string | null;
     source_year: number | null;
+    kind: string;
     events: number;
     alerts: number;
   }[];
@@ -472,4 +474,39 @@ export const api = {
   latestModel: () => request<ModelDetail>("/api/v1/ml/models/latest"),
   scores: (params: Record<string, QueryValue>) =>
     request<ScorePage>(`/api/v1/ml/scores${queryString(params)}`),
+  liveStatus: () =>
+    request<LiveStatus>("/api/v1/live/status"),
+  liveCollectors: () => request<LiveCollector[]>("/api/v1/live/collectors"),
+  authorizeFile: (body: { name: string; path: string; source_year?: number | null }) =>
+    request<LiveCollector>("/api/v1/live/files", { method: "POST", body: JSON.stringify(body) }),
+  startCollector: (id: string) =>
+    request<LiveCollector>(`/api/v1/live/collectors/${id}/start`, { method: "POST" }),
+  stopCollector: (id: string) =>
+    request<LiveCollector>(`/api/v1/live/collectors/${id}/stop`, { method: "POST" }),
 };
+
+export interface LiveStatus {
+  implemented: boolean;
+  journald_available: boolean;
+  journald_detail: string;
+  allow_roots: string[];
+  detail: string;
+}
+
+export interface LiveCollector {
+  id: string;
+  source_id: string;
+  source_name: string;
+  source_kind: string;
+  kind: string;
+  path: string;
+  enabled: boolean;
+  status: string;
+  byte_offset: number;
+  lines_read: number;
+  lines_imported: number;
+  duplicates_skipped: number;
+  lines_errored: number;
+  last_error: string | null;
+  last_event_at: string | null;
+}

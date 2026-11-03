@@ -13,6 +13,9 @@ export function SourcesPage() {
   const setSourceId = useSelection((state) => state.setSourceId);
   const [name, setName] = useState("");
   const [year, setYear] = useState("");
+  const [liveName, setLiveName] = useState("");
+  const [livePath, setLivePath] = useState("");
+  const [liveYear, setLiveYear] = useState("");
   const [kind, setKind] = useState<"raw" | "templates" | "structured">("raw");
   const [file, setFile] = useState<File | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -21,6 +24,8 @@ export function SourcesPage() {
     queryKey: ["jobs", sourceId],
     queryFn: () => api.jobs(sourceId),
   });
+  const liveStatus = useQuery({ queryKey: ["live-status"], queryFn: api.liveStatus });
+  const collectors = useQuery({ queryKey: ["live-collectors"], queryFn: api.liveCollectors });
   const errors = useQuery({
     queryKey: ["job-errors", jobId],
     queryFn: () => api.jobErrors(jobId ?? ""),
@@ -38,6 +43,28 @@ export function SourcesPage() {
       await client.invalidateQueries({ queryKey: ["sources"] });
     },
   });
+  const authorize = useMutation({
+    mutationFn: () =>
+      api.authorizeFile({
+        name: liveName,
+        path: livePath,
+        source_year: liveYear ? Number(liveYear) : null,
+      }),
+    onSuccess: async (collector) => {
+      setLiveName("");
+      setLivePath("");
+      setSourceId(collector.source_id);
+      await client.invalidateQueries({ queryKey: ["live-collectors"] });
+      await client.invalidateQueries({ queryKey: ["sources"] });
+    },
+  });
+  const toggleCollector = useMutation({
+    mutationFn: (collector: { id: string; enabled: boolean }) =>
+      collector.enabled ? api.stopCollector(collector.id) : api.startCollector(collector.id),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ["live-collectors"] });
+    },
+  });
   const upload = useMutation({
     mutationFn: () => api.upload(sourceId ?? "", kind, file as File),
     onSuccess: async (job) => {
@@ -51,12 +78,111 @@ export function SourcesPage() {
   return (
     <div className="space-y-3">
       <h1 className="text-sm font-medium">Data sources</h1>
-      <div className="rounded-lg border border-line bg-panel px-3 py-2 text-xs text-mute">
-        <Button type="button" variant="outline" disabled>
-          Start live collector
-        </Button>
-        <p className="mt-2">Live collectors are not in this build.</p>
-      </div>
+      <section className="space-y-2 rounded-lg border border-line bg-panel px-3 py-2 text-xs">
+        <h2 className="text-[11px] uppercase tracking-wider text-mute">Live collectors</h2>
+        <p className="text-mute">
+          {liveStatus.data?.journald_detail ?? "Checking journald…"} File tails read as this user, not as root,
+          and log text is not sent to a shell.
+        </p>
+        {liveStatus.data ? (
+          <p className="text-mute">
+            Allowlist: {liveStatus.data.allow_roots.length ? liveStatus.data.allow_roots.join(", ") : "empty"}
+          </p>
+        ) : null}
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            authorize.mutate();
+          }}
+        >
+          <label className="text-[11px] text-mute">
+            Live source name
+            <Input value={liveName} onChange={(event) => setLiveName(event.target.value)} required />
+          </label>
+          <label className="text-[11px] text-mute">
+            Authorized file
+            <Input
+              value={livePath}
+              onChange={(event) => setLivePath(event.target.value)}
+              placeholder="/var/log/sentinellog/app.log"
+              required
+              className="w-72"
+            />
+          </label>
+          <label className="text-[11px] text-mute">
+            Year
+            <Input
+              value={liveYear}
+              onChange={(event) => setLiveYear(event.target.value)}
+              className="w-24"
+            />
+          </label>
+          <Button type="submit" disabled={authorize.isPending}>
+            Authorize file
+          </Button>
+        </form>
+        {authorize.isError ? <ErrorNote error={authorize.error} /> : null}
+        {collectors.isLoading ? <Loading label="Loading collectors" /> : null}
+        {collectors.isError ? <ErrorNote error={collectors.error} /> : null}
+        {collectors.data && collectors.data.length === 0 ? (
+          <Empty>No authorized live files.</Empty>
+        ) : null}
+        {collectors.data && collectors.data.length > 0 ? (
+          <table className="w-full text-left">
+            <thead className="text-mute">
+              <tr>
+                <th className="py-1 font-medium">Source</th>
+                <th className="py-1 font-medium">Status</th>
+                <th className="py-1 font-medium">Imported</th>
+                <th className="py-1 font-medium">Duplicates</th>
+                <th className="py-1 font-medium">Offset</th>
+                <th className="py-1 font-medium">Path</th>
+                <th className="py-1 font-medium" />
+              </tr>
+            </thead>
+            <tbody>
+              {collectors.data.map((collector) => (
+                <tr key={collector.id} className="border-t border-line">
+                  <td className="py-1">
+                    {collector.source_name} <Badge value="live" />
+                  </td>
+                  <td className="py-1">
+                    <Badge value={collector.status} />
+                  </td>
+                  <td className="py-1 font-mono" data-testid="collector-imported">
+                    {collector.lines_imported}
+                  </td>
+                  <td className="py-1 font-mono">{collector.duplicates_skipped}</td>
+                  <td className="py-1 font-mono">{collector.byte_offset}</td>
+                  <td className="max-w-[280px] truncate py-1 text-mute">{collector.path}</td>
+                  <td className="py-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleCollector.mutate(collector)}
+                    >
+                      {collector.enabled ? "Stop" : "Start"}
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+        {collectors.data?.some((collector) => collector.last_error) ? (
+          <ul className="text-danger">
+            {collectors.data
+              .filter((collector) => collector.last_error)
+              .map((collector) => (
+                <li key={collector.id}>
+                  {collector.source_name}: {collector.last_error}
+                </li>
+              ))}
+          </ul>
+        ) : null}
+      </section>
       <form
         className="flex flex-wrap items-end gap-2"
         onSubmit={(event) => {

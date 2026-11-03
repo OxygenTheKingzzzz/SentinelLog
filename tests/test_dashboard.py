@@ -70,9 +70,9 @@ def test_overview_facets_and_settings_follow_stored_rows(client):
     settings = client.get("/api/v1/settings")
     assert settings.status_code == 200, settings.text
     payload = settings.json()
-    assert payload["version"] == "0.4.0"
+    assert payload["version"] == "0.5.0"
     assert payload["pdf_export"] is False
-    assert payload["live_collection"] is False
+    assert payload["live_collection"] is True
     assert "password" not in payload["database"]
     assert "sentinellog" not in str(payload["database"].get("password", ""))
     assert payload["database"]["name"]

@@ -9,6 +9,7 @@ TEST_DATABASE_URL = os.environ.get(
 )
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 os.environ["LOG_LEVEL"] = "WARNING"
+os.environ["SENTINELLOG_LIVE_SUPERVISOR"] = "0"
 os.environ.pop("SOURCE_YEAR", None)
 
 import pytest  # noqa: E402
@@ -32,7 +33,9 @@ TABLES = (
     "security_alerts",
     "detection_rules",
     "ingestion_errors",
+    "live_positions",
     "log_events",
+    "live_collectors",
     "ingestion_jobs",
     "event_templates",
     "log_sources",

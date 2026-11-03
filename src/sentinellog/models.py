@@ -43,6 +43,9 @@ class LogSource(Base):
     description: Mapped[str | None] = mapped_column(Text)
     hostname: Mapped[str | None] = mapped_column(Text)
     source_year: Mapped[int | None] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="historical", server_default=text("'historical'")
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
     )
@@ -55,6 +58,7 @@ class LogSource(Base):
             "source_year IS NULL OR (source_year >= 1970 AND source_year <= 2100)",
             name="ck_log_sources_year",
         ),
+        CheckConstraint("kind IN ('historical','live_file')", name="ck_log_sources_kind"),
     )
 
 
@@ -97,7 +101,8 @@ class IngestionJob(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "kind IN ('raw_log','template_csv','structured_import','structured_validate')",
+            "kind IN ('raw_log','template_csv','structured_import',"
+            "'structured_validate','live_file')",
             name="ck_ingestion_jobs_kind",
         ),
         CheckConstraint(
@@ -180,7 +185,10 @@ class LogEvent(Base):
         CheckConstraint("length(content) > 0", name="ck_log_events_content"),
         CheckConstraint("pid IS NULL OR pid >= 0", name="ck_log_events_pid"),
         CheckConstraint("raw_line_sha256 ~ '^[0-9a-f]{64}$'", name="ck_log_events_sha"),
-        CheckConstraint("origin IN ('raw_log','structured_csv')", name="ck_log_events_origin"),
+        CheckConstraint(
+            "origin IN ('raw_log','structured_csv','live_file')",
+            name="ck_log_events_origin",
+        ),
         Index("ix_log_events_component", "component"),
         Index("ix_log_events_event_id", "event_id"),
         Index("ix_log_events_event_timestamp", "event_timestamp"),
@@ -618,4 +626,101 @@ class AnomalyScore(Base):
         Index("ix_anomaly_scores_model_id", "model_id"),
         Index("ix_anomaly_scores_source_id", "source_id"),
         Index("ix_anomaly_scores_window_start", "window_start"),
+    )
+
+
+class LiveCollector(Base):
+    """Read-only tail of one explicitly authorized file. Not a linux-2k import."""
+
+    __tablename__ = "live_collectors"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("log_sources.id", ondelete="CASCADE"), nullable=False
+    )
+    job_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("ingestion_jobs.id", ondelete="CASCADE"), nullable=False
+    )
+    kind: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="file", server_default=text("'file'")
+    )
+    path: Mapped[str] = mapped_column(Text, nullable=False)
+    enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
+    status: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="running", server_default=text("'running'")
+    )
+    device: Mapped[int | None] = mapped_column(BigInteger)
+    inode: Mapped[int | None] = mapped_column(BigInteger)
+    byte_offset: Mapped[int] = mapped_column(
+        BigInteger, nullable=False, default=0, server_default=text("0")
+    )
+    partial: Mapped[str] = mapped_column(
+        Text, nullable=False, default="", server_default=text("''")
+    )
+    next_line_number: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1, server_default=text("1")
+    )
+    lines_read: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
+    lines_imported: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
+    duplicates_skipped: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
+    lines_errored: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
+    last_error: Mapped[str | None] = mapped_column(Text)
+    last_event_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("source_id", name="uq_live_collectors_source_id"),
+        CheckConstraint("kind = 'file'", name="ck_live_collectors_kind"),
+        CheckConstraint(
+            "status IN ('running','stopped','waiting','error')",
+            name="ck_live_collectors_status",
+        ),
+        CheckConstraint("byte_offset >= 0", name="ck_live_collectors_byte_offset"),
+        CheckConstraint("next_line_number >= 1", name="ck_live_collectors_next_line"),
+        CheckConstraint("lines_read >= 0", name="ck_live_collectors_lines_read"),
+        CheckConstraint("lines_imported >= 0", name="ck_live_collectors_lines_imported"),
+        CheckConstraint("duplicates_skipped >= 0", name="ck_live_collectors_duplicates"),
+        CheckConstraint("lines_errored >= 0", name="ck_live_collectors_lines_errored"),
+        CheckConstraint("length(partial) <= 8192", name="ck_live_collectors_partial"),
+        Index("ix_live_collectors_enabled", "enabled"),
+    )
+
+
+class LivePosition(Base):
+    """A line already consumed from an authorized file. Replay of that hash is a duplicate."""
+
+    __tablename__ = "live_positions"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    collector_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("live_collectors.id", ondelete="CASCADE"), nullable=False
+    )
+    device: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    inode: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    byte_offset: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    line_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("collector_id", "line_sha256", name="uq_live_positions_sha"),
+        CheckConstraint("byte_offset >= 0", name="ck_live_positions_byte_offset"),
+        CheckConstraint("line_sha256 ~ '^[0-9a-f]{64}$'", name="ck_live_positions_sha"),
+        Index("ix_live_positions_collector_id", "collector_id"),
     )

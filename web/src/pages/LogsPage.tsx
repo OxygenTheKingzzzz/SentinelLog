@@ -5,6 +5,7 @@ import { api, type LogEvent } from "@/lib/api";
 import { csvEscape, downloadText, formatWhen } from "@/lib/format";
 import { useSelection } from "@/store/selection";
 import { Empty, ErrorNote, Loading } from "@/components/States";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -199,6 +200,7 @@ export function LogsPage() {
                         <Link className="text-cyan" to={`/logs?line=${row.line_number}`}>
                           {row.line_number}
                         </Link>
+                        {row.origin === "live_file" ? <Badge value="live" /> : null}
                       </td>
                       <td className="px-2 py-1 whitespace-nowrap">{formatWhen(row.event_timestamp)}</td>
                       <td className="px-2 py-1">{row.hostname}</td>

@@ -1,3 +1,7 @@
+import os
+import threading
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -12,6 +16,7 @@ from sentinellog.ingestion.validation import FileRejected
 from sentinellog.investigations import router as investigations_router
 from sentinellog.jsonlog import configure_logging
 from sentinellog.live import router as live_router
+from sentinellog.live.supervisor import supervisor_loop
 from sentinellog.ml import router as ml_router
 from sentinellog.reports import router as reports_router
 
@@ -19,10 +24,29 @@ from sentinellog.reports import router as reports_router
 def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging(settings.log_level)
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
+        stop = threading.Event()
+        thread: threading.Thread | None = None
+        if os.environ.get("SENTINELLOG_LIVE_SUPERVISOR", "1") != "0":
+            thread = threading.Thread(
+                target=supervisor_loop,
+                args=(stop,),
+                name="live-supervisor",
+                daemon=True,
+            )
+            thread.start()
+        yield
+        stop.set()
+        if thread is not None:
+            thread.join(timeout=2)
+
     app = FastAPI(
         title="SentinelLog",
         version=__version__,
-        summary="Milestone 4: dashboard API over stored logs, alerts, and anomaly scores.",
+        summary="Milestone 5: optional read-only tail of authorized local files.",
+        lifespan=lifespan,
     )
     app.add_middleware(
         CORSMiddleware,

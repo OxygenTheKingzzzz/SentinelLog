@@ -1,6 +1,6 @@
 # SentinelLog
 
-Local SOC / Linux log intelligence platform. It ingests historical syslog, stores it in PostgreSQL, runs a rule-based detection engine and an experimental anomaly scorer, and serves a React dashboard over those stored rows. It does not collect live logs or write PDF reports.
+Local SOC / Linux log intelligence platform. It ingests historical syslog, stores it in PostgreSQL, runs a rule-based detection engine and an experimental anomaly scorer, and serves a React dashboard over those stored rows. It can also tail an explicitly allowlisted local file, read-only, into a separate live source. It does not write PDF reports.
 
 The bundled sample is the [Loghub](https://github.com/logpai/loghub) Linux_2k log (about 2,000 historical lines from host `combo`). There are no malicious/benign labels in that dataset. Detection alerts are rule findings on those unlabeled logs, not confirmed compromise.
 
@@ -106,9 +106,9 @@ Alert lifecycle values are `open`, `investigating`, `resolved`, and `false_posit
 
 Uploads are size-limited (`MAX_UPLOAD_BYTES`, default 32 MiB), must be UTF-8 text without NUL bytes, and must use an allowed extension. Filenames that contain a path or `..` are rejected. Log bytes are stored and parsed. They are not executed and are not passed to a shell.
 
-`GET /api/v1/detection/status` reports that the rule engine is implemented. `GET /api/v1/ml/status` reports that anomaly scoring is implemented and that the dataset has no ground truth (`metrics` is null). Analyst workspaces live at `/api/v1/investigations`. `/incidents`, `/reports`, and `/live` still report that those modules are not implemented. Anomaly scores are stored in `anomaly_scores`, not in `security_alerts`.
+`GET /api/v1/detection/status` reports that the rule engine is implemented. `GET /api/v1/ml/status` reports that anomaly scoring is implemented and that the dataset has no ground truth (`metrics` is null). Analyst workspaces live at `/api/v1/investigations`. `GET /api/v1/live/status` reports that file tailing is implemented. `/incidents` and `/reports` still report that those modules are not implemented. Anomaly scores are stored in `anomaly_scores`, not in `security_alerts`. Live lines are stored with `origin=live_file` on their own source. They are not inserted into `linux-2k`.
 
-The dashboard is `web/`. How to run it, and which endpoint each page calls, is in `/cursor/stores/self/docs/milestone-4.md`.
+The dashboard is `web/`. How to run it is in `/cursor/stores/self/docs/milestone-4.md`. How to authorize a live file is in `/cursor/stores/self/docs/milestone-5.md`.
 
 ## Layout
 
@@ -117,7 +117,8 @@ The dashboard is `web/`. How to run it, and which endpoint each page calls, is i
 - `src/sentinellog/detection/` builtin rules, tumbling and sliding windows, backfill, alert lifecycle
 - `src/sentinellog/ml/` hourly features, Isolation Forest, robust-z baseline, model artifacts
 - `src/sentinellog/investigations/` analyst workspaces, correlation graph, JSON evidence bundle
+- `src/sentinellog/live/` allowlisted file tail, checkpoints, collector health, SSE
 - `web/` React dashboard (Vite). It reads the API and does not invent counts
-- Package boundaries only: `incidents`, `reports`, `live`
+- Package boundaries only: `incidents`, `reports`
 
-Tables are created by Alembic. Revision `6a757cd7ca97` is the initial schema. Revision `ed1cc76d8439` adds rule versions, alert evidence, the four-status lifecycle, and `alert_notes`. Revision `c4e8b1a09d27` adds `anomaly_models` and `anomaly_scores`. Revision `d5f2a8c13e40` adds `investigation_alerts` and `investigation_notes`.
+Tables are created by Alembic. Revision `6a757cd7ca97` is the initial schema. Revision `ed1cc76d8439` adds rule versions, alert evidence, the four-status lifecycle, and `alert_notes`. Revision `c4e8b1a09d27` adds `anomaly_models` and `anomaly_scores`. Revision `d5f2a8c13e40` adds `investigation_alerts` and `investigation_notes`. Revision `e7b1c4d09a52` adds `live_collectors` and `live_positions` and the `live_file` source kind. It does not delete events, alerts, or scores.

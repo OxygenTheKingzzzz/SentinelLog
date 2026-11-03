@@ -1,7 +1,7 @@
 [project]
 name = "sentinellog"
-version = "0.4.0"
-description = "Local SOC / Linux log intelligence platform. Milestone 4 adds the dashboard API."
+version = "0.5.0"
+description = "Local SOC / Linux log intelligence platform. Milestone 5 adds optional read-only file tailing."
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.14",
@@ -46,6 +46,7 @@ select = ["E", "F", "I", "UP", "B"]
 "src/sentinellog/detection/routes.py" = ["B008"]
 "src/sentinellog/ml/routes.py" = ["B008"]
 "src/sentinellog/investigations/routes.py" = ["B008"]
+"src/sentinellog/live/routes.py" = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

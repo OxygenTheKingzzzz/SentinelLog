@@ -208,7 +208,10 @@ export function OverviewPage() {
             <tbody>
               {data.sources.map((source) => (
                 <tr key={source.id} className="border-t border-line">
-                  <td className="px-3 py-1.5">{source.name}</td>
+                  <td className="px-3 py-1.5">
+                    {source.name}{" "}
+                    {source.kind === "live_file" ? <Badge value="live" /> : null}
+                  </td>
                   <td className="px-3 py-1.5">{source.hostname ?? "—"}</td>
                   <td className="px-3 py-1.5">{source.source_year ?? "—"}</td>
                   <td className="px-3 py-1.5 font-mono text-cyan">{source.events}</td>

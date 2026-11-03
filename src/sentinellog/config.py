@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 33_554_432
     log_level: str = "INFO"
     anomaly_artifact_dir: str = "var/anomaly-models"
+    # Colon-separated absolute directories. Empty means no live path can be authorized.
+    live_allow_roots: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
