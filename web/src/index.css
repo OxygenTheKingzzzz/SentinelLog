@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", menlo, monospace;
+  --color-navy: #070d18;
+  --color-panel: #111924;
+  --color-panel-2: #172232;
+  --color-line: #243246;
+  --color-ink: #d7e0ea;
+  --color-mute: #8ea0b5;
+  --color-cyan: #5ec8d8;
+  --color-amber: #e39a45;
+  --color-danger: #e06a6a;
+  --color-ok: #3cbe8b;
+  --color-high: #e08a4f;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-navy);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.recharts-cartesian-grid line {
+  stroke: #243246;
+}
+
+.react-flow__controls-button {
+  background: #172232;
+  border-bottom-color: #243246;
+  fill: #d7e0ea;
+}

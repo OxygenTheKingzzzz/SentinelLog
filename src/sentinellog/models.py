@@ -403,6 +403,50 @@ class InvestigationEvent(Base):
     )
 
 
+class InvestigationAlert(Base):
+    """Rule alert attached to an investigation. The alert itself stays in security_alerts."""
+
+    __tablename__ = "investigation_alerts"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    investigation_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("investigations.id", ondelete="CASCADE"), nullable=False
+    )
+    alert_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("security_alerts.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("investigation_id", "alert_id", name="uq_investigation_alerts_pair"),
+        Index("ix_investigation_alerts_investigation_id", "investigation_id"),
+        Index("ix_investigation_alerts_alert_id", "alert_id"),
+    )
+
+
+class InvestigationNote(Base):
+    """Analyst note on an investigation. This is not a rule finding."""
+
+    __tablename__ = "investigation_notes"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    investigation_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("investigations.id", ondelete="CASCADE"), nullable=False
+    )
+    actor: Mapped[str] = mapped_column(String(200), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        CheckConstraint("length(body) > 0", name="ck_investigation_notes_body"),
+        Index("ix_investigation_notes_investigation_id", "investigation_id"),
+    )
+
+
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 

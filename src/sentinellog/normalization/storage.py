@@ -28,8 +28,7 @@ def like_contains(value: str) -> str:
     return f"%{escaped}%"
 
 
-def search_events(
-    session: Session,
+def event_filters(
     *,
     source_id: UUID | None = None,
     component: str | None = None,
@@ -40,10 +39,9 @@ def search_events(
     day: int | None = None,
     occurred_from: datetime | None = None,
     occurred_to: datetime | None = None,
-    limit: int = 50,
-    offset: int = 0,
-) -> tuple[list[LogEvent], int]:
-    filters = []
+    line_number: int | None = None,
+) -> list[object]:
+    filters: list[object] = []
     if source_id is not None:
         filters.append(LogEvent.source_id == source_id)
     if component:
@@ -60,6 +58,8 @@ def search_events(
         filters.append(LogEvent.event_timestamp >= occurred_from)
     if occurred_to is not None:
         filters.append(LogEvent.event_timestamp <= occurred_to)
+    if line_number is not None:
+        filters.append(LogEvent.line_number == line_number)
     if q:
         pattern = like_contains(q)
         filters.append(
@@ -68,7 +68,37 @@ def search_events(
                 LogEvent.raw_line.ilike(pattern, escape="\\"),
             )
         )
+    return filters
 
+
+def search_events(
+    session: Session,
+    *,
+    source_id: UUID | None = None,
+    component: str | None = None,
+    event_id: str | None = None,
+    hostname: str | None = None,
+    q: str | None = None,
+    month: str | None = None,
+    day: int | None = None,
+    occurred_from: datetime | None = None,
+    occurred_to: datetime | None = None,
+    line_number: int | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> tuple[list[LogEvent], int]:
+    filters = event_filters(
+        source_id=source_id,
+        component=component,
+        event_id=event_id,
+        hostname=hostname,
+        q=q,
+        month=month,
+        day=day,
+        occurred_from=occurred_from,
+        occurred_to=occurred_to,
+        line_number=line_number,
+    )
     total = session.scalar(select(func.count()).select_from(LogEvent).where(*filters)) or 0
     rows = session.scalars(
         select(LogEvent)
@@ -152,4 +182,26 @@ def quality_report(session: Session, source_id: UUID) -> dict[str, object] | Non
             for row in recent
         ],
         "notes": QUALITY_NOTES,
+    }
+
+
+def _facet(session: Session, column: object, filters: list[object], limit: int = 40) -> list[dict]:
+    rows = session.execute(
+        select(column, func.count())
+        .where(*filters, column.is_not(None))
+        .group_by(column)
+        .order_by(func.count().desc(), column)
+        .limit(limit)
+    ).all()
+    return [{"value": value, "count": int(count)} for value, count in rows]
+
+
+def event_facets(session: Session, **filters_kwargs: object) -> dict[str, object]:
+    filters = event_filters(**filters_kwargs)  # type: ignore[arg-type]
+    total = int(session.scalar(select(func.count()).select_from(LogEvent).where(*filters)) or 0)
+    return {
+        "total": total,
+        "components": _facet(session, LogEvent.component, filters),
+        "event_ids": _facet(session, LogEvent.event_id, filters),
+        "hostnames": _facet(session, LogEvent.hostname, filters),
     }

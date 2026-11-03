@@ -25,6 +25,8 @@ TABLES = (
     "anomaly_scores",
     "anomaly_models",
     "alert_notes",
+    "investigation_notes",
+    "investigation_alerts",
     "investigation_events",
     "investigations",
     "security_alerts",

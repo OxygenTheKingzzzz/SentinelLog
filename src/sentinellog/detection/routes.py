@@ -108,6 +108,7 @@ def get_alerts(
     source_id: UUID | None = None,
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
+    sort: str = "window_start",
     db: Session = Depends(get_db),
 ) -> AlertPage:
     try:
@@ -119,9 +120,12 @@ def get_alerts(
             source_id=source_id,
             limit=limit,
             offset=offset,
+            sort=sort,
         )
     except RuleNotFound:
         raise HTTPException(status_code=404, detail="rule not found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
     notes = notes_for(db, [row.id for row in rows])
     return AlertPage(
         total=total,

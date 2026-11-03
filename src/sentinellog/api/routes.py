@@ -3,10 +3,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy import func, select
+from sqlalchemy.engine.url import make_url
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from sentinellog import __version__
 from sentinellog.api.deps import get_db
+from sentinellog.api.overview import overview
 from sentinellog.api.schemas import (
     ErrorOut,
     EventOut,
@@ -28,8 +31,15 @@ from sentinellog.ingestion.service import (
     import_template_csv,
 )
 from sentinellog.ingestion.validation import CSV_SUFFIXES, RAW_SUFFIXES, validate_filename
-from sentinellog.models import EventTemplate, IngestionError, IngestionJob, LogEvent, LogSource
-from sentinellog.normalization.storage import quality_report, search_events
+from sentinellog.models import (
+    AuditLog,
+    EventTemplate,
+    IngestionError,
+    IngestionJob,
+    LogEvent,
+    LogSource,
+)
+from sentinellog.normalization.storage import event_facets, quality_report, search_events
 
 router = APIRouter(prefix="/api/v1")
 root_router = APIRouter()
@@ -201,6 +211,7 @@ def list_events(
     day: int | None = Query(default=None, ge=1, le=31),
     occurred_from: datetime | None = None,
     occurred_to: datetime | None = None,
+    line_number: int | None = Query(default=None, ge=1),
     limit: int = Query(default=50, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
@@ -216,6 +227,7 @@ def list_events(
         day=day,
         occurred_from=occurred_from,
         occurred_to=occurred_to,
+        line_number=line_number,
         limit=limit,
         offset=offset,
     )
@@ -225,6 +237,100 @@ def list_events(
         offset=offset,
         items=[event_out(row) for row in rows],
     )
+
+
+@router.get("/events/facets")
+def get_event_facets(
+    source_id: UUID | None = None,
+    component: str | None = None,
+    event_id: str | None = None,
+    hostname: str | None = None,
+    q: str | None = Query(default=None, max_length=500),
+    month: str | None = None,
+    day: int | None = Query(default=None, ge=1, le=31),
+    occurred_from: datetime | None = None,
+    occurred_to: datetime | None = None,
+    line_number: int | None = Query(default=None, ge=1),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    return event_facets(
+        db,
+        source_id=source_id,
+        component=component,
+        event_id=event_id,
+        hostname=hostname,
+        q=q,
+        month=month,
+        day=day,
+        occurred_from=occurred_from,
+        occurred_to=occurred_to,
+        line_number=line_number,
+    )
+
+
+@router.get("/overview")
+def get_overview(
+    source_id: UUID | None = None,
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    body = overview(db, source_id)
+    if body is None:
+        raise HTTPException(status_code=404, detail="source not found")
+    return body
+
+
+@router.get("/audit")
+def list_audit(
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    total = int(db.scalar(select(func.count()).select_from(AuditLog)) or 0)
+    rows = db.scalars(
+        select(AuditLog)
+        .order_by(AuditLog.created_at.desc(), AuditLog.id)
+        .limit(limit)
+        .offset(offset)
+    ).all()
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "items": [
+            {
+                "id": str(row.id),
+                "actor": row.actor,
+                "action": row.action,
+                "entity_type": row.entity_type,
+                "entity_id": row.entity_id,
+                "details": row.details,
+                "created_at": row.created_at,
+            }
+            for row in rows
+        ],
+    }
+
+
+@router.get("/settings")
+def public_settings(db: Session = Depends(get_db)) -> dict[str, object]:
+    db.execute(select(1))
+    settings = get_settings()
+    url = make_url(settings.database_url)
+    return {
+        "version": __version__,
+        "log_level": settings.log_level,
+        "max_upload_bytes": settings.max_upload_bytes,
+        "source_year": settings.source_year,
+        "anomaly_artifact_dir": settings.anomaly_artifact_dir,
+        "live_collection": False,
+        "pdf_export": False,
+        "database": {
+            "driver": url.drivername,
+            "host": url.host,
+            "port": url.port,
+            "name": url.database,
+        },
+    }
 
 
 @router.get("/events/{event_id}", response_model=EventOut)

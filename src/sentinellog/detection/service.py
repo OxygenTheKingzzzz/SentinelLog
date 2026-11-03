@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -193,6 +193,7 @@ def list_alerts(
     source_id: UUID | None = None,
     limit: int = 100,
     offset: int = 0,
+    sort: str = "window_start",
 ) -> tuple[list[SecurityAlert], int]:
     stmt = select(SecurityAlert)
     count_stmt = select(func.count()).select_from(SecurityAlert)
@@ -210,11 +211,22 @@ def list_alerts(
         stmt = stmt.where(SecurityAlert.rule_id == rule_id)
         count_stmt = count_stmt.where(SecurityAlert.rule_id == rule_id)
     total = int(session.scalar(count_stmt) or 0)
-    rows = session.scalars(
-        stmt.order_by(SecurityAlert.window_start, SecurityAlert.title, SecurityAlert.id)
-        .limit(limit)
-        .offset(offset)
-    ).all()
+    if sort == "window_start":
+        order = (SecurityAlert.window_start, SecurityAlert.title, SecurityAlert.id)
+    elif sort == "created_at":
+        order = (SecurityAlert.created_at.desc(), SecurityAlert.id)
+    elif sort == "severity":
+        rank = case(
+            (SecurityAlert.severity == "critical", 0),
+            (SecurityAlert.severity == "high", 1),
+            (SecurityAlert.severity == "medium", 2),
+            (SecurityAlert.severity == "low", 3),
+            else_=4,
+        )
+        order = (rank, SecurityAlert.window_start, SecurityAlert.id)
+    else:
+        raise ValueError("sort must be window_start, created_at, or severity")
+    rows = session.scalars(stmt.order_by(*order).limit(limit).offset(offset)).all()
     return list(rows), total
 
 

@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from sentinellog import __version__
@@ -8,6 +9,7 @@ from sentinellog.config import get_settings
 from sentinellog.detection import alerts_router, detection_router, rules_router
 from sentinellog.incidents import router as incidents_router
 from sentinellog.ingestion.validation import FileRejected
+from sentinellog.investigations import router as investigations_router
 from sentinellog.jsonlog import configure_logging
 from sentinellog.live import router as live_router
 from sentinellog.ml import router as ml_router
@@ -20,7 +22,13 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="SentinelLog",
         version=__version__,
-        summary="Milestone 3: experimental anomaly detection over stored Linux syslog.",
+        summary="Milestone 4: dashboard API over stored logs, alerts, and anomaly scores.",
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     app.include_router(root_router)
     app.include_router(api_router)
@@ -28,6 +36,7 @@ def create_app() -> FastAPI:
     app.include_router(rules_router, prefix="/api/v1")
     app.include_router(alerts_router, prefix="/api/v1")
     app.include_router(ml_router, prefix="/api/v1")
+    app.include_router(investigations_router, prefix="/api/v1")
     app.include_router(incidents_router, prefix="/api/v1")
     app.include_router(reports_router, prefix="/api/v1")
     app.include_router(live_router, prefix="/api/v1")

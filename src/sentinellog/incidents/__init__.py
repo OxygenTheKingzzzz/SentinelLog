@@ -1,4 +1,4 @@
-"""Investigations are deferred. The investigations tables are intentionally empty."""
+"""Incident confirmation stays out of this build. Analyst workspaces are /investigations."""
 
 from fastapi import APIRouter
 
@@ -10,5 +10,9 @@ def incidents_status() -> dict[str, object]:
     return {
         "module": "incidents",
         "implemented": False,
-        "detail": "Investigation workflow is deferred. No incidents are created from logs.",
+        "detail": (
+            "Confirmed-incident workflow is not in this build. Analyst workspaces "
+            "that group stored alerts and events are at /api/v1/investigations. "
+            "PDF export is not included."
+        ),
     }

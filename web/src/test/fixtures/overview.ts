@@ -1,0 +1,65 @@
+/** Test-only overview payload. Production pages do not import this file. */
+export const overviewFixture = {
+  events: 42,
+  alerts: 7,
+  investigations: 3,
+  templates: 5,
+  auth_failures: 11,
+  time_min: "2005-06-14T15:16:01Z",
+  time_max: "2005-06-15T04:06:18Z",
+  daily: [
+    { day: "2005-06-14", events: 20, auth_failures: 6 },
+    { day: "2005-06-15", events: 22, auth_failures: 5 },
+  ],
+  severity: [
+    { severity: "high", count: 4 },
+    { severity: "medium", count: 3 },
+  ],
+  recent_alerts: [
+    {
+      id: "alert-fixture",
+      title: "fixture alert",
+      severity: "high",
+      status: "open",
+      source_address: "203.0.113.5",
+      rule_id: "rule-fixture",
+      first_event_at: "2005-06-14T15:16:01Z",
+      last_event_at: "2005-06-14T15:20:01Z",
+      line_numbers: [1],
+    },
+  ],
+  sources: [
+    {
+      id: "source-fixture",
+      name: "fixture-source",
+      hostname: "lab",
+      source_year: 2005,
+      events: 42,
+      alerts: 7,
+    },
+  ],
+  anomaly: {
+    model_id: "model-fixture",
+    model_version: 1,
+    windows: 9,
+    flagged_isolation: 1,
+    flagged_baseline: 2,
+    flagged_either: 2,
+  },
+  ingestion: {
+    jobs: 4,
+    jobs_completed: 3,
+    jobs_failed: 1,
+    parse_errors: 2,
+    lines_errored: 2,
+    last_job: {
+      id: "job-fixture",
+      filename: "fixture.log",
+      kind: "raw",
+      status: "completed",
+      lines_parsed: 42,
+      lines_errored: 0,
+      created_at: "2005-06-15T00:00:00Z",
+    },
+  },
+};

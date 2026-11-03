@@ -1,7 +1,7 @@
 [project]
 name = "sentinellog"
-version = "0.3.0"
-description = "Local SOC / Linux log intelligence platform. Milestone 3 adds experimental anomaly detection."
+version = "0.4.0"
+description = "Local SOC / Linux log intelligence platform. Milestone 4 adds the dashboard API."
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.14",
@@ -45,6 +45,7 @@ select = ["E", "F", "I", "UP", "B"]
 "src/sentinellog/api/routes.py" = ["B008"]
 "src/sentinellog/detection/routes.py" = ["B008"]
 "src/sentinellog/ml/routes.py" = ["B008"]
+"src/sentinellog/investigations/routes.py" = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
