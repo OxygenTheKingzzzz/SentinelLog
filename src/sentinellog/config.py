@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 33_554_432
     log_level: str = "INFO"
     anomaly_artifact_dir: str = "var/anomaly-models"
+    risk_artifact_dir: str = "var/risk-models"
     # Colon-separated absolute directories. Empty means no live path can be authorized.
     live_allow_roots: str = ""
     # Comma-separated browser origins. Empty means no cross-origin browser access.

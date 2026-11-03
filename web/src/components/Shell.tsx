@@ -12,6 +12,7 @@ const links = [
   ["/alerts", "Alerts"],
   ["/investigations", "Investigations"],
   ["/anomalies", "Anomalies"],
+  ["/risk", "Risk"],
   ["/sources", "Sources"],
   ["/rules", "Rules"],
   ["/settings", "Settings"],

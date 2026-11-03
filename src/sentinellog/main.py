@@ -20,6 +20,7 @@ from sentinellog.live.supervisor import supervisor_loop
 from sentinellog.ml import router as ml_router
 from sentinellog.ratelimit import WindowLimiter, bucket_for
 from sentinellog.reports import router as reports_router
+from sentinellog.risk import router as risk_router
 
 
 def create_app() -> FastAPI:
@@ -47,7 +48,7 @@ def create_app() -> FastAPI:
         title="SentinelLog",
         version=__version__,
         debug=settings.debug,
-        summary="Milestone 7: configurable limits, CORS, and JSON errors.",
+        summary="Risk classification, labeled evaluation, and the existing log workspace.",
         lifespan=lifespan,
     )
     limiter = WindowLimiter()
@@ -84,6 +85,7 @@ def create_app() -> FastAPI:
     app.include_router(rules_router, prefix="/api/v1")
     app.include_router(alerts_router, prefix="/api/v1")
     app.include_router(ml_router, prefix="/api/v1")
+    app.include_router(risk_router, prefix="/api/v1")
     app.include_router(investigations_router, prefix="/api/v1")
     app.include_router(incidents_router, prefix="/api/v1")
     app.include_router(reports_router, prefix="/api/v1")

@@ -1,0 +1,1065 @@
+{
+  "generated_at": "2026-11-03T11:11:01Z",
+  "generator": "sentinellog.risk.experiments",
+  "seed": 42,
+  "experiments": [
+    {
+      "dataset": "bgl",
+      "dataset_version": "loghub-zenodo-8196385-BGL.zip",
+      "source_url": "https://zenodo.org/records/8196385/files/BGL.zip?download=1",
+      "file_sha256": "d67fd82a711aea0157a9b83175892c6ee60e384a2ddf5bc51f39118453816da8",
+      "label_unit": "line",
+      "label_provenance": "dataset_native",
+      "label_definition": "The first whitespace-separated token is the published BGL alert label. '-' is normal and any other token is an alert. That token is removed before the template group and the model features are built.",
+      "population": {
+        "lines": 4747963,
+        "parsed": 4713493,
+        "normal": 4365033,
+        "anomaly": 348460,
+        "skipped": 34470,
+        "sampled": 28000,
+        "template_groups": 47160,
+        "sampled_groups": 2807
+      },
+      "sample": {
+        "seed": 42,
+        "global_cap": 28000,
+        "per_group_cap": 40,
+        "method": "Whole template groups were drawn with a seeded class round-robin before the train/test split. Each group contributes at most 40 lines."
+      },
+      "task": "binary_anomaly",
+      "random_seed": 42,
+      "test_fraction": 0.3,
+      "models": [
+        {
+          "algorithm": "isolation_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "stratified_group",
+          "n_train": 19569,
+          "n_test": 8000,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Template groups were split with stratification on the majority label. No normalized template appears in both sides.",
+          "metrics": {
+            "accuracy": 0.221,
+            "precision_macro": 0.22028273553548766,
+            "recall_macro": 0.36761221336108035,
+            "f1_macro": 0.196678642582838,
+            "precision_weighted": 0.21988313958341604,
+            "recall_weighted": 0.221,
+            "f1_weighted": 0.1354908597704089,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.22119557608847823,
+                "recall": 0.7025344597598933,
+                "f1": 0.3364565587734242,
+                "support": 2249
+              },
+              {
+                "label": "anomaly",
+                "precision": 0.2193698949824971,
+                "recall": 0.03268996696226743,
+                "f1": 0.05690072639225181,
+                "support": 5751
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  1580,
+                  669
+                ],
+                [
+                  5563,
+                  188
+                ]
+              ]
+            },
+            "roc_auc": 0.07521633487059957,
+            "pr_auc": 0.5333655775353224,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 8000,
+            "precision": 0.2193698949824971,
+            "recall": 0.03268996696226743,
+            "f1": 0.05690072639225181,
+            "positive_label": "anomaly",
+            "n_train": 19569,
+            "n_test": 8000,
+            "n_train_positive": 15158,
+            "n_test_positive": 5751,
+            "train_label_counts": {
+              "normal": 4411,
+              "anomaly": 15158
+            },
+            "test_label_counts": {
+              "anomaly": 5751,
+              "normal": 2249
+            }
+          },
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "Isolation Forest is unsupervised and has no training cross-validation."
+          },
+          "real_world": true
+        },
+        {
+          "algorithm": "random_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "stratified_group",
+          "n_train": 19569,
+          "n_test": 8000,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Template groups were split with stratification on the majority label. No normalized template appears in both sides.",
+          "metrics": {
+            "accuracy": 0.997125,
+            "precision_macro": 0.9967785300992593,
+            "recall_macro": 0.9961050329445673,
+            "f1_macro": 0.996441071267722,
+            "precision_weighted": 0.997124013468392,
+            "recall_weighted": 0.997125,
+            "f1_weighted": 0.9971240249091357,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.9959893048128342,
+                "recall": 0.9937750111160516,
+                "f1": 0.9948809258847096,
+                "support": 2249
+              },
+              {
+                "label": "anomaly",
+                "precision": 0.9975677553856845,
+                "recall": 0.9984350547730829,
+                "f1": 0.9980012166507344,
+                "support": 5751
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  2235,
+                  14
+                ],
+                [
+                  9,
+                  5742
+                ]
+              ]
+            },
+            "roc_auc": 0.999952373585308,
+            "pr_auc": 0.999981385933447,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 8000,
+            "precision": 0.9975677553856845,
+            "recall": 0.9984350547730829,
+            "f1": 0.9980012166507344,
+            "positive_label": "anomaly",
+            "n_train": 19569,
+            "n_test": 8000,
+            "n_train_positive": 15158,
+            "n_test_positive": 5751,
+            "train_label_counts": {
+              "normal": 4411,
+              "anomaly": 15158
+            },
+            "test_label_counts": {
+              "anomaly": 5751,
+              "normal": 2249
+            }
+          },
+          "cv": {
+            "folds": 3,
+            "accuracy_mean": 0.9881666666666667,
+            "f1_macro_mean": 0.9841188448822228,
+            "n_examples": 6000,
+            "scope": "training groups only",
+            "note": "These means are model-selection diagnostics. They are not the held-out test score."
+          },
+          "real_world": true
+        },
+        {
+          "algorithm": "tfidf_logreg",
+          "task": "binary_anomaly",
+          "fit_protocol": "stratified_group",
+          "n_train": 19569,
+          "n_test": 8000,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Template groups were split with stratification on the majority label. No normalized template appears in both sides.",
+          "metrics": {
+            "accuracy": 0.9925,
+            "precision_macro": 0.9870073624945864,
+            "recall_macro": 0.9947835159102765,
+            "f1_macro": 0.990796246617333,
+            "precision_weighted": 0.9926948895625812,
+            "recall_weighted": 0.9925,
+            "f1_weighted": 0.9925296993616968,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.9740147249891729,
+                "recall": 1.0,
+                "f1": 0.9868363317244405,
+                "support": 2249
+              },
+              {
+                "label": "anomaly",
+                "precision": 1.0,
+                "recall": 0.989567031820553,
+                "f1": 0.9947561615102255,
+                "support": 5751
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  2249,
+                  0
+                ],
+                [
+                  60,
+                  5691
+                ]
+              ]
+            },
+            "roc_auc": 0.9997720735868311,
+            "pr_auc": 0.9999116041217285,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 8000,
+            "precision": 1.0,
+            "recall": 0.989567031820553,
+            "f1": 0.9947561615102255,
+            "positive_label": "anomaly",
+            "n_train": 19569,
+            "n_test": 8000,
+            "n_train_positive": 15158,
+            "n_test_positive": 5751,
+            "train_label_counts": {
+              "normal": 4411,
+              "anomaly": 15158
+            },
+            "test_label_counts": {
+              "anomaly": 5751,
+              "normal": 2249
+            }
+          },
+          "cv": {
+            "folds": 3,
+            "accuracy_mean": 0.9874999999999999,
+            "f1_macro_mean": 0.9830844917059617,
+            "n_examples": 6000,
+            "scope": "training groups only",
+            "note": "These means are model-selection diagnostics. They are not the held-out test score."
+          },
+          "real_world": true
+        }
+      ]
+    },
+    {
+      "dataset": "hdfs",
+      "dataset_version": "loghub-zenodo-8196385-HDFS_v1",
+      "source_url": "https://zenodo.org/records/8196385/files/HDFS_v1.zip?download=1",
+      "file_sha256": "1c711ed6c8848fc3243fb4d092f172f31d128c8a6ec7f26ebba72ab931885ed8",
+      "label_unit": "block",
+      "label_provenance": "dataset_native",
+      "label_definition": "anomaly_label.csv BlockId label. Normal and Anomaly are the verified binary classes. Event_traces Features is the template sequence. The trace file's Success/Fail column and Latency are not features and not labels.",
+      "population": {
+        "labeled_blocks": 575061,
+        "normal": 558223,
+        "anomaly": 16838,
+        "traces": 575061,
+        "joined": 575061,
+        "sampled": 28000,
+        "template_groups": 18373,
+        "sampled_groups": 7815
+      },
+      "sample": {
+        "seed": 42,
+        "global_cap": 28000,
+        "per_group_cap": 40,
+        "method": "Seeded class round-robin over block template groups before the train/test split."
+      },
+      "task": "binary_anomaly",
+      "random_seed": 42,
+      "test_fraction": 0.3,
+      "models": [
+        {
+          "algorithm": "isolation_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "stratified_group",
+          "n_train": 19130,
+          "n_test": 8000,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Template groups were split with stratification on the majority label. No normalized template appears in both sides.",
+          "metrics": {
+            "accuracy": 0.7225,
+            "precision_macro": 0.6442283936275589,
+            "recall_macro": 0.5435882654884546,
+            "f1_macro": 0.5200205483094994,
+            "precision_weighted": 0.6830599449606185,
+            "recall_weighted": 0.7225,
+            "f1_weighted": 0.6543054194652855,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.7343770908604309,
+                "recall": 0.9589376201293028,
+                "f1": 0.8317672021824796,
+                "support": 5723
+              },
+              {
+                "label": "anomaly",
+                "precision": 0.5540796963946869,
+                "recall": 0.1282389108476065,
+                "f1": 0.20827389443651925,
+                "support": 2277
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  5488,
+                  235
+                ],
+                [
+                  1985,
+                  292
+                ]
+              ]
+            },
+            "roc_auc": 0.7095903768711432,
+            "pr_auc": 0.4774704559301073,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 8000,
+            "precision": 0.5540796963946869,
+            "recall": 0.1282389108476065,
+            "f1": 0.20827389443651925,
+            "positive_label": "anomaly",
+            "n_train": 19130,
+            "n_test": 8000,
+            "n_train_positive": 5423,
+            "n_test_positive": 2277,
+            "train_label_counts": {
+              "anomaly": 5423,
+              "normal": 13707
+            },
+            "test_label_counts": {
+              "normal": 5723,
+              "anomaly": 2277
+            }
+          },
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "Isolation Forest is unsupervised and has no training cross-validation."
+          },
+          "real_world": true
+        },
+        {
+          "algorithm": "random_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "stratified_group",
+          "n_train": 19130,
+          "n_test": 8000,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Template groups were split with stratification on the majority label. No normalized template appears in both sides.",
+          "metrics": {
+            "accuracy": 0.997875,
+            "precision_macro": 0.996549759481183,
+            "recall_macro": 0.9982503241625471,
+            "f1_macro": 0.9973953600752863,
+            "precision_weighted": 0.9978850749279209,
+            "recall_weighted": 0.997875,
+            "f1_weighted": 0.997876816288675,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.9996497373029772,
+                "recall": 0.9973789970295299,
+                "f1": 0.9985130761829791,
+                "support": 5723
+              },
+              {
+                "label": "anomaly",
+                "precision": 0.9934497816593887,
+                "recall": 0.9991216512955643,
+                "f1": 0.9962776439675936,
+                "support": 2277
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  5708,
+                  15
+                ],
+                [
+                  2,
+                  2275
+                ]
+              ]
+            },
+            "roc_auc": 0.9995373053019925,
+            "pr_auc": 0.9979184045320757,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 8000,
+            "precision": 0.9934497816593887,
+            "recall": 0.9991216512955643,
+            "f1": 0.9962776439675936,
+            "positive_label": "anomaly",
+            "n_train": 19130,
+            "n_test": 8000,
+            "n_train_positive": 5423,
+            "n_test_positive": 2277,
+            "train_label_counts": {
+              "anomaly": 5423,
+              "normal": 13707
+            },
+            "test_label_counts": {
+              "normal": 5723,
+              "anomaly": 2277
+            }
+          },
+          "cv": {
+            "folds": 3,
+            "accuracy_mean": 0.9931654989163748,
+            "f1_macro_mean": 0.9916294263319232,
+            "n_examples": 6000,
+            "scope": "training groups only",
+            "note": "These means are model-selection diagnostics. They are not the held-out test score."
+          },
+          "real_world": true
+        },
+        {
+          "algorithm": "tfidf_logreg",
+          "task": "binary_anomaly",
+          "fit_protocol": "stratified_group",
+          "n_train": 19130,
+          "n_test": 8000,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Template groups were split with stratification on the majority label. No normalized template appears in both sides.",
+          "metrics": {
+            "accuracy": 0.99125,
+            "precision_macro": 0.9858804604242413,
+            "recall_macro": 0.9929587835292505,
+            "f1_macro": 0.9893349381712085,
+            "precision_weighted": 0.9914303804536548,
+            "recall_weighted": 0.99125,
+            "f1_weighted": 0.9912816352396496,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.9987647785424387,
+                "recall": 0.9889917875240258,
+                "f1": 0.9938542581211589,
+                "support": 5723
+              },
+              {
+                "label": "anomaly",
+                "precision": 0.9729961423060437,
+                "recall": 0.9969257795344751,
+                "f1": 0.9848156182212582,
+                "support": 2277
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  5660,
+                  63
+                ],
+                [
+                  7,
+                  2270
+                ]
+              ]
+            },
+            "roc_auc": 0.9990199344331032,
+            "pr_auc": 0.9969683591158882,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 8000,
+            "precision": 0.9729961423060437,
+            "recall": 0.9969257795344751,
+            "f1": 0.9848156182212582,
+            "positive_label": "anomaly",
+            "n_train": 19130,
+            "n_test": 8000,
+            "n_train_positive": 5423,
+            "n_test_positive": 2277,
+            "train_label_counts": {
+              "anomaly": 5423,
+              "normal": 13707
+            },
+            "test_label_counts": {
+              "normal": 5723,
+              "anomaly": 2277
+            }
+          },
+          "cv": {
+            "folds": 3,
+            "accuracy_mean": 0.9730018290837906,
+            "f1_macro_mean": 0.9675533399700841,
+            "n_examples": 6000,
+            "scope": "training groups only",
+            "note": "These means are model-selection diagnostics. They are not the held-out test score."
+          },
+          "real_world": true
+        }
+      ]
+    },
+    {
+      "dataset": "openstack",
+      "dataset_version": "loghub-zenodo-8196385-OpenStack.tar.gz",
+      "source_url": "https://zenodo.org/records/8196385/files/OpenStack.tar.gz?download=1",
+      "file_sha256": "0882aa484f285e3dda476ff39ed739603c446f27b76bb113e284cda6ebb09d0b",
+      "label_unit": "vm_instance",
+      "label_provenance": "dataset_native",
+      "label_definition": "anomaly_labels.txt lists VM instance ids with injected anomalies. Every other instance id found in [instance: ...] or /servers/<id> is normal. Lines that mention no instance are unlabeled and are excluded. Instance ids are replaced before grouping so the model cannot memorize the four ids.",
+      "population": {
+        "instances": 2069,
+        "anomaly": 4,
+        "normal": 2065,
+        "anomalous_ids_in_label_file": 4,
+        "template_groups": 39
+      },
+      "sample": {
+        "seed": null,
+        "method": "Every discovered instance is kept. No subsample."
+      },
+      "task": "binary_anomaly",
+      "random_seed": 42,
+      "test_fraction": 0.3,
+      "models": [
+        {
+          "algorithm": "isolation_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "positive_groups_held_out",
+          "n_train": 732,
+          "n_test": 1337,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Every positive template group was held out of training. Isolation Forest is fit only on the training groups. A class has fewer than two template groups, so the split is a seeded group holdout and is not stratified.",
+          "metrics": {
+            "accuracy": 0.0029917726252804786,
+            "precision_macro": 0.0014958863126402393,
+            "recall_macro": 0.5,
+            "f1_macro": 0.002982848620432513,
+            "precision_weighted": 8.950703441377648e-06,
+            "recall_weighted": 0.0029917726252804786,
+            "f1_weighted": 1.7848009695931265e-05,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 1333
+              },
+              {
+                "label": "anomaly",
+                "precision": 0.0029917726252804786,
+                "recall": 1.0,
+                "f1": 0.005965697240865026,
+                "support": 4
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  0,
+                  1333
+                ],
+                [
+                  0,
+                  4
+                ]
+              ]
+            },
+            "roc_auc": 0.9326706676669168,
+            "pr_auc": 0.037500000000000006,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 1337,
+            "precision": 0.0029917726252804786,
+            "recall": 1.0,
+            "f1": 0.005965697240865026,
+            "positive_label": "anomaly",
+            "n_train": 732,
+            "n_test": 1337,
+            "n_train_positive": 0,
+            "n_test_positive": 4,
+            "train_label_counts": {
+              "normal": 732
+            },
+            "test_label_counts": {
+              "normal": 1333,
+              "anomaly": 4
+            }
+          },
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "Isolation Forest is unsupervised and has no training cross-validation."
+          },
+          "real_world": true
+        },
+        {
+          "algorithm": "random_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "not_fit",
+          "n_train": 0,
+          "n_test": 0,
+          "metrics_status": "not_evaluated",
+          "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+          "detail": "The positive class collapses to one normalized template group. A supervised model cannot be tested on that group without also training on it.",
+          "metrics": null,
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "The positive class collapses to one normalized template group. A supervised model cannot be tested on that group without also training on it."
+          },
+          "real_world": false
+        },
+        {
+          "algorithm": "tfidf_logreg",
+          "task": "binary_anomaly",
+          "fit_protocol": "not_fit",
+          "n_train": 0,
+          "n_test": 0,
+          "metrics_status": "not_evaluated",
+          "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+          "detail": "The positive class collapses to one normalized template group. A supervised model cannot be tested on that group without also training on it.",
+          "metrics": null,
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "The positive class collapses to one normalized template group. A supervised model cannot be tested on that group without also training on it."
+          },
+          "real_world": false
+        }
+      ]
+    },
+    {
+      "dataset": "hadoop",
+      "dataset_version": "loghub-zenodo-8196385-Hadoop.zip",
+      "source_url": "https://zenodo.org/records/8196385/files/Hadoop.zip?download=1",
+      "file_sha256": "79e63c6521e90ae164754a29d13e04e0c6c5e782490a7fe1e2b124f4f5737ced",
+      "label_unit": "application",
+      "label_provenance": "dataset_native",
+      "label_definition": "abnormal_label.txt marks each application Normal or a failure type (machine down, network disconnection, disk full). Failure types are binary anomalies. They are not LOW/MEDIUM/HIGH/CRITICAL labels. Applications absent from the label file are excluded.",
+      "population": {
+        "labeled_applications": 55,
+        "examples": 55,
+        "normal": 11,
+        "anomaly": 44,
+        "template_groups": 55
+      },
+      "sample": {
+        "method": "Up to 80 normalized lines from each labeled application's containers."
+      },
+      "task": "binary_anomaly",
+      "random_seed": 42,
+      "test_fraction": 0.3,
+      "models": [
+        {
+          "algorithm": "isolation_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "stratified_group",
+          "n_train": 38,
+          "n_test": 17,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Template groups were split with stratification on the majority label. No normalized template appears in both sides.",
+          "metrics": {
+            "accuracy": 0.11764705882352941,
+            "precision_macro": 0.0625,
+            "recall_macro": 0.3333333333333333,
+            "f1_macro": 0.10526315789473684,
+            "precision_weighted": 0.022058823529411766,
+            "recall_weighted": 0.11764705882352941,
+            "f1_weighted": 0.03715170278637771,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.125,
+                "recall": 0.6666666666666666,
+                "f1": 0.21052631578947367,
+                "support": 3
+              },
+              {
+                "label": "anomaly",
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 14
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  2,
+                  1
+                ],
+                [
+                  14,
+                  0
+                ]
+              ]
+            },
+            "roc_auc": 0.23809523809523814,
+            "pr_auc": 0.7227061745444099,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 17,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "positive_label": "anomaly",
+            "n_train": 38,
+            "n_test": 17,
+            "n_train_positive": 30,
+            "n_test_positive": 14,
+            "train_label_counts": {
+              "anomaly": 30,
+              "normal": 8
+            },
+            "test_label_counts": {
+              "anomaly": 14,
+              "normal": 3
+            }
+          },
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "Isolation Forest is unsupervised and has no training cross-validation."
+          },
+          "real_world": true
+        },
+        {
+          "algorithm": "random_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "stratified_group",
+          "n_train": 38,
+          "n_test": 17,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Template groups were split with stratification on the majority label. No normalized template appears in both sides.",
+          "metrics": {
+            "accuracy": 0.6470588235294118,
+            "precision_macro": 0.5166666666666667,
+            "recall_macro": 0.5238095238095238,
+            "f1_macro": 0.5096153846153846,
+            "precision_weighted": 0.7215686274509805,
+            "recall_weighted": 0.6470588235294118,
+            "f1_weighted": 0.6776018099547512,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.2,
+                "recall": 0.3333333333333333,
+                "f1": 0.25,
+                "support": 3
+              },
+              {
+                "label": "anomaly",
+                "precision": 0.8333333333333334,
+                "recall": 0.7142857142857143,
+                "f1": 0.7692307692307693,
+                "support": 14
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  1,
+                  2
+                ],
+                [
+                  4,
+                  10
+                ]
+              ]
+            },
+            "roc_auc": 0.4166666666666667,
+            "pr_auc": 0.836808738646974,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 17,
+            "precision": 0.8333333333333334,
+            "recall": 0.7142857142857143,
+            "f1": 0.7692307692307693,
+            "positive_label": "anomaly",
+            "n_train": 38,
+            "n_test": 17,
+            "n_train_positive": 30,
+            "n_test_positive": 14,
+            "train_label_counts": {
+              "anomaly": 30,
+              "normal": 8
+            },
+            "test_label_counts": {
+              "anomaly": 14,
+              "normal": 3
+            }
+          },
+          "cv": {
+            "folds": 3,
+            "accuracy_mean": 0.7051282051282052,
+            "f1_macro_mean": 0.5742604617604617,
+            "n_examples": 38,
+            "scope": "training groups only",
+            "note": "These means are model-selection diagnostics. They are not the held-out test score."
+          },
+          "real_world": true
+        },
+        {
+          "algorithm": "tfidf_logreg",
+          "task": "binary_anomaly",
+          "fit_protocol": "stratified_group",
+          "n_train": 38,
+          "n_test": 17,
+          "metrics_status": "evaluated",
+          "metrics_note": null,
+          "detail": "Template groups were split with stratification on the majority label. No normalized template appears in both sides.",
+          "metrics": {
+            "accuracy": 0.4117647058823529,
+            "precision_macro": 0.4305555555555556,
+            "recall_macro": 0.38095238095238093,
+            "f1_macro": 0.356060606060606,
+            "precision_weighted": 0.6372549019607844,
+            "recall_weighted": 0.4117647058823529,
+            "f1_weighted": 0.4786096256684492,
+            "per_class": [
+              {
+                "label": "normal",
+                "precision": 0.1111111111111111,
+                "recall": 0.3333333333333333,
+                "f1": 0.16666666666666666,
+                "support": 3
+              },
+              {
+                "label": "anomaly",
+                "precision": 0.75,
+                "recall": 0.42857142857142855,
+                "f1": 0.5454545454545454,
+                "support": 14
+              }
+            ],
+            "confusion_matrix": {
+              "labels": [
+                "normal",
+                "anomaly"
+              ],
+              "matrix": [
+                [
+                  1,
+                  2
+                ],
+                [
+                  8,
+                  6
+                ]
+              ]
+            },
+            "roc_auc": 0.22619047619047622,
+            "pr_auc": 0.7294351073762838,
+            "roc_auc_note": null,
+            "pr_auc_note": null,
+            "support": 17,
+            "precision": 0.75,
+            "recall": 0.42857142857142855,
+            "f1": 0.5454545454545454,
+            "positive_label": "anomaly",
+            "n_train": 38,
+            "n_test": 17,
+            "n_train_positive": 30,
+            "n_test_positive": 14,
+            "train_label_counts": {
+              "anomaly": 30,
+              "normal": 8
+            },
+            "test_label_counts": {
+              "anomaly": 14,
+              "normal": 3
+            }
+          },
+          "cv": {
+            "folds": 3,
+            "accuracy_mean": 0.2884615384615385,
+            "f1_macro_mean": 0.2811188811188811,
+            "n_examples": 38,
+            "scope": "training groups only",
+            "note": "These means are model-selection diagnostics. They are not the held-out test score."
+          },
+          "real_world": true
+        }
+      ]
+    },
+    {
+      "dataset": "thunderbird",
+      "dataset_version": "loghub-Thunderbird_2k",
+      "source_url": "https://raw.githubusercontent.com/logpai/loghub/master/Thunderbird/Thunderbird_2k.log",
+      "file_sha256": "903bbfa61c34d4803e4adcb0d726ff2eeb9a2e11971243269a2035fa6c3bbeb0",
+      "label_unit": "line",
+      "label_provenance": "dataset_native",
+      "label_definition": "Thunderbird uses the same first-token alert label as BGL. The published 2k sample is not the full 211,212,192-line corpus.",
+      "population": {
+        "lines": 2000,
+        "parsed": 2000,
+        "normal": 2000,
+        "anomaly": 0,
+        "skipped": 0,
+        "sampled": 1934,
+        "template_groups": 824,
+        "sampled_groups": 824
+      },
+      "sample": {
+        "seed": 42,
+        "global_cap": 28000,
+        "per_group_cap": 40
+      },
+      "task": "binary_anomaly",
+      "random_seed": 42,
+      "test_fraction": 0.3,
+      "models": [
+        {
+          "algorithm": "isolation_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "not_fit",
+          "n_train": 0,
+          "n_test": 0,
+          "metrics_status": "not_evaluated",
+          "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+          "detail": "The labeled sample does not contain both classes, so accuracy is not computed.",
+          "metrics": null,
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "The labeled sample does not contain both classes, so accuracy is not computed."
+          },
+          "real_world": false
+        },
+        {
+          "algorithm": "random_forest",
+          "task": "binary_anomaly",
+          "fit_protocol": "not_fit",
+          "n_train": 0,
+          "n_test": 0,
+          "metrics_status": "not_evaluated",
+          "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+          "detail": "The labeled sample does not contain both classes, so accuracy is not computed.",
+          "metrics": null,
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "The labeled sample does not contain both classes, so accuracy is not computed."
+          },
+          "real_world": false
+        },
+        {
+          "algorithm": "tfidf_logreg",
+          "task": "binary_anomaly",
+          "fit_protocol": "not_fit",
+          "n_train": 0,
+          "n_test": 0,
+          "metrics_status": "not_evaluated",
+          "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+          "detail": "The labeled sample does not contain both classes, so accuracy is not computed.",
+          "metrics": null,
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "The labeled sample does not contain both classes, so accuracy is not computed."
+          },
+          "real_world": false
+        }
+      ]
+    },
+    {
+      "dataset": "linux",
+      "dataset_version": "loghub-Linux_2k",
+      "source_url": "https://github.com/logpai/loghub/tree/master/Linux",
+      "file_sha256": null,
+      "label_unit": "line",
+      "label_provenance": "none",
+      "label_definition": "Loghub's dataset table leaves Linux unlabeled.",
+      "population": {
+        "lines": 2000,
+        "verified_risk_labels": 0
+      },
+      "sample": {
+        "method": "No labeled split. The bundled Linux_2k file has no risk labels."
+      },
+      "task": "multiclass_risk",
+      "random_seed": 42,
+      "test_fraction": null,
+      "models": [
+        {
+          "algorithm": "isolation_forest",
+          "task": "unsupervised_band",
+          "fit_protocol": "group_holdout",
+          "n_train": null,
+          "n_test": null,
+          "metrics_status": "not_evaluated",
+          "metrics_note": "Not evaluated \u2014 ground-truth labels required",
+          "detail": "Loghub Linux has no malicious or benign labels and no LOW/MEDIUM/HIGH/CRITICAL ground truth. Isolation Forest can still assign score bands. Those bands are not verified risk labels.",
+          "metrics": null,
+          "cv": {
+            "folds": 0,
+            "scope": "training groups only",
+            "note": "Loghub Linux has no malicious or benign labels and no LOW/MEDIUM/HIGH/CRITICAL ground truth. Isolation Forest can still assign score bands. Those bands are not verified risk labels."
+          },
+          "real_world": false
+        }
+      ]
+    }
+  ]
+}

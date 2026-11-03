@@ -129,6 +129,7 @@ Routes are under `/api/v1` unless noted. `GET /health` checks the database.
 - Jobs: `GET /jobs`, `GET /jobs/{id}`, `GET /jobs/{id}/errors`
 - Rules and alerts: `GET /detection/status`, `POST /detection/run`, `GET/PATCH /rules`, `GET /alerts`, `POST /alerts/{id}/status`
 - Anomalies: `GET /ml/status`, `POST /ml/train`, `POST /ml/score`, `GET /ml/models`, `GET /ml/models/latest`, `GET /ml/scores`
+- Risk: `GET /risk/experiments`, `GET /risk/predictions`, `GET /risk/distribution`, `POST /risk/bands`, `POST /risk/labels`, `POST /risk/labels/import`, `POST /risk/weak-labels`, `POST /risk/train`
 - Investigations: `GET/POST /investigations`, `POST /{id}/links`, `PATCH /{id}/status`, `POST /{id}/notes`, `GET /{id}/graph`, `GET /{id}/evidence`, `GET /{id}/report.pdf`
 - Live: `GET /live/status`, `GET /live/collectors`, `POST /live/files`, `POST /live/collectors/{id}/start|stop`, `GET /live/stream`
 - Other: `GET /audit`, `GET /settings`, `GET /incidents/status`, `GET /reports/status`
@@ -143,9 +144,20 @@ Uploads are size-limited, must be UTF-8 text without NUL bytes, and must use an 
 - `src/sentinellog/normalization/` timestamps, optional IP/username, search and quality queries
 - `src/sentinellog/detection/` builtin rules, windows, backfill, alert lifecycle
 - `src/sentinellog/ml/` hourly features, Isolation Forest, robust-z baseline
+- `src/sentinellog/risk/` four-level risk bands, verified labels, and per-dataset evaluation
 - `src/sentinellog/investigations/` workspaces, graph, JSON and PDF reports
 - `src/sentinellog/live/` allowlisted file tail and SSE
 - `web/` React dashboard
 - `incidents` remains a status stub
 
-Tables are created by Alembic. `6a757cd7ca97` is the initial schema. `ed1cc76d8439` adds rule versions and alert notes. `c4e8b1a09d27` adds anomaly models and scores. `d5f2a8c13e40` adds investigation links and notes. `e7b1c4d09a52` adds live collectors. Later revisions do not delete events, alerts, or scores.
+Tables are created by Alembic. `6a757cd7ca97` is the initial schema. `ed1cc76d8439` adds rule versions and alert notes. `c4e8b1a09d27` adds anomaly models and scores. `d5f2a8c13e40` adds investigation links and notes. `e7b1c4d09a52` adds live collectors. `f3a91c2e8b17` adds risk labels, models, and predictions. Later revisions do not delete events, alerts, or scores.
+
+## Risk classification
+
+`POST /api/v1/risk/bands` fits an Isolation Forest on stored Linux logs and assigns LOW, MEDIUM, HIGH, or CRITICAL from training-score quantiles. The anomaly score is not a class probability. Loghub Linux has no verified risk labels, so that page shows `Not evaluated — ground-truth labels required`.
+
+Reviewers can save a verified label with `POST /api/v1/risk/labels` or import `line_number,risk_level,note` as `verified_import`. `POST /api/v1/risk/weak-labels` copies alert severity onto events and marks those rows `weak_rule`. Training on weak labels stores agreement only in the model config. It does not fill the accuracy field.
+
+`python -m sentinellog.risk.experiments <dataset-dir> --out src/sentinellog/risk/published_results.json` evaluates BGL, HDFS, OpenStack, Hadoop, and Thunderbird with their own parsers when those files are present. Metrics in that file are held-out scores on each dataset's own unit. A dataset that does not contain both classes is left unevaluated.
+
+BGL and HDFS numbers describe a seeded sample of at most 28,000 examples. Whole template groups are drawn round-robin by class before the split, and each group contributes at most 40 rows, so the test base rate is not the corpus base rate. OpenStack supervised models stay unevaluated when the anomalous instances share one normalized template. Thunderbird_2k and Linux stay unevaluated. Binary datasets are scored as normal versus anomaly. That is not four-class LOW/MEDIUM/HIGH/CRITICAL accuracy.

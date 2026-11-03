@@ -1,7 +1,7 @@
 [project]
 name = "sentinellog"
-version = "0.7.0"
-description = "Local SOC / Linux log intelligence platform. Milestone 7 closes the remaining request limits and error handling."
+version = "0.8.0"
+description = "Local SOC / Linux log intelligence platform with risk classification and labeled-dataset evaluation."
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.14",
@@ -47,6 +47,7 @@ select = ["E", "F", "I", "UP", "B"]
 "src/sentinellog/ml/routes.py" = ["B008"]
 "src/sentinellog/investigations/routes.py" = ["B008"]
 "src/sentinellog/live/routes.py" = ["B008"]
+"src/sentinellog/risk/routes.py" = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

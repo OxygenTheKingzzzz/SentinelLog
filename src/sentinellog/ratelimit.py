@@ -7,6 +7,7 @@ import time
 _IMPORT = re.compile(r"^/api/v1/sources/[^/]+/ingest/(raw|templates|structured)$")
 _DETECT = re.compile(r"^/api/v1/detection/run$")
 _ML = re.compile(r"^/api/v1/ml/(train|score)$")
+_RISK = re.compile(r"^/api/v1/risk/(train|bands|weak-labels|labels/import)$")
 _PDF = re.compile(r"^/api/v1/investigations/[^/]+/report\.pdf$")
 
 
@@ -17,6 +18,8 @@ def bucket_for(method: str, path: str) -> str | None:
         return "detect"
     if method == "POST" and _ML.match(path):
         return "ml"
+    if method == "POST" and _RISK.match(path):
+        return "risk"
     if method == "GET" and _PDF.match(path):
         return "pdf"
     return None

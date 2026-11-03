@@ -23,6 +23,9 @@ from sentinellog.db import reset_engine  # noqa: E402
 
 TABLES = (
     "audit_logs",
+    "risk_predictions",
+    "risk_labels",
+    "risk_models",
     "anomaly_scores",
     "anomaly_models",
     "alert_notes",

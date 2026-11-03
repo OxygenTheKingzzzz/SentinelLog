@@ -46,6 +46,11 @@ export function LogsPage() {
     queryKey: ["events", filters, page],
     queryFn: () => api.events({ ...filters, limit: PAGE, offset: page * PAGE }),
   });
+  const risk = useQuery({
+    queryKey: ["risk-predictions", sourceId, "logs"],
+    queryFn: () => api.riskPredictions({ source_id: sourceId, limit: 5000 }),
+  });
+  const riskByEvent = new Map((risk.data?.items ?? []).map((item) => [item.log_event_id, item]));
   const focused = useQuery({
     queryKey: ["event", focusId],
     queryFn: () => api.event(focusId ?? ""),
@@ -174,6 +179,7 @@ export function LogsPage() {
                     <th className="px-2 py-1.5 font-medium">Host</th>
                     <th className="px-2 py-1.5 font-medium">Component</th>
                     <th className="px-2 py-1.5 font-medium">Event</th>
+                    <th className="px-2 py-1.5 font-medium">Risk</th>
                     <th className="px-2 py-1.5 font-medium">Content</th>
                   </tr>
                 </thead>
@@ -206,6 +212,13 @@ export function LogsPage() {
                       <td className="px-2 py-1">{row.hostname}</td>
                       <td className="px-2 py-1">{row.component}</td>
                       <td className="px-2 py-1 font-mono text-mute">{row.event_id ?? "—"}</td>
+                      <td className="px-2 py-1">
+                        {riskByEvent.get(row.id) ? (
+                          <Badge value={riskByEvent.get(row.id)!.predicted_risk.toLowerCase()} />
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                       <td className="max-w-[420px] truncate px-2 py-1">
                         <button
                           type="button"

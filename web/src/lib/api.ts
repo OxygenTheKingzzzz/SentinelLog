@@ -544,6 +544,24 @@ export const api = {
     request<LiveCollector>(`/api/v1/live/collectors/${id}/start`, { method: "POST" }),
   stopCollector: (id: string) =>
     request<LiveCollector>(`/api/v1/live/collectors/${id}/stop`, { method: "POST" }),
+  riskExperiments: () => request<RiskExperiments>("/api/v1/risk/experiments"),
+  riskDistribution: (sourceId?: string | null) =>
+    request<RiskDistribution>(`/api/v1/risk/distribution${queryString({ source_id: sourceId })}`),
+  riskModels: () => request<RiskModel[]>("/api/v1/risk/models"),
+  riskPredictions: (params: Record<string, QueryValue>) =>
+    request<RiskPredictionPage>(`/api/v1/risk/predictions${queryString(params)}`),
+  saveRiskLabel: (body: { log_event_id: string; risk_level: string; note?: string }) =>
+    request<RiskLabel>("/api/v1/risk/labels", { method: "POST", body: JSON.stringify(body) }),
+  importRiskLabels: (sourceId: string, file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return request<{ labels: number }>(
+      `/api/v1/risk/labels/import${queryString({ source_id: sourceId })}`,
+      { method: "POST", body },
+    );
+  },
+  trainRiskBands: (sourceId: string) =>
+    request<RiskModel>(`/api/v1/risk/bands${queryString({ source_id: sourceId })}`, { method: "POST" }),
 };
 
 export interface LiveStatus {
@@ -552,6 +570,126 @@ export interface LiveStatus {
   journald_detail: string;
   allow_roots: string[];
   detail: string;
+}
+
+export interface RiskMetric {
+  accuracy?: number;
+  precision?: number;
+  recall?: number;
+  f1?: number;
+  precision_macro?: number;
+  recall_macro?: number;
+  f1_macro?: number;
+  precision_weighted?: number;
+  recall_weighted?: number;
+  f1_weighted?: number;
+  roc_auc?: number | null;
+  pr_auc?: number | null;
+  roc_auc_note?: string | null;
+  pr_auc_note?: string | null;
+  n_train?: number;
+  n_test?: number;
+  n_train_positive?: number;
+  n_test_positive?: number;
+  support?: number;
+  per_class?: { label: string; precision: number; recall: number; f1: number; support: number }[];
+  confusion_matrix?: { labels: string[]; matrix: number[][] };
+}
+
+export interface RiskModelResult {
+  algorithm: string;
+  task: string;
+  fit_protocol: string;
+  n_train: number | null;
+  n_test: number | null;
+  metrics_status: string;
+  metrics_note: string | null;
+  detail: string | null;
+  metrics: RiskMetric | null;
+  cv: { folds?: number; accuracy_mean?: number; f1_macro_mean?: number; note?: string; scope?: string };
+  real_world: boolean;
+}
+
+export interface RiskExperiment {
+  dataset: string;
+  dataset_version: string;
+  source_url: string | null;
+  label_unit: string;
+  label_provenance: string;
+  label_definition: string;
+  population: Record<string, number | string>;
+  sample: Record<string, unknown>;
+  task: string;
+  random_seed: number;
+  models: RiskModelResult[];
+}
+
+export interface RiskExperiments {
+  generated_at: string | null;
+  experiments: RiskExperiment[];
+}
+
+export interface RiskDistribution {
+  model_id: string | null;
+  model_version?: number;
+  algorithm?: string;
+  metrics_status?: string;
+  metrics_note?: string;
+  counts: { risk: string; count: number }[];
+}
+
+export interface RiskModel {
+  id: string;
+  version: number;
+  algorithm: string;
+  task: string;
+  dataset_name: string;
+  label_provenance: string;
+  n_train: number;
+  n_test: number;
+  metrics: RiskMetric | null;
+  metrics_status: string;
+  metrics_note: string;
+  real_world: boolean;
+  config: {
+    real_world?: boolean;
+    weak_label_agreement?: RiskMetric | null;
+    detail?: string | null;
+    cv?: { folds?: number; accuracy_mean?: number; note?: string };
+  };
+}
+
+export interface RiskPrediction {
+  id: string;
+  model_id: string;
+  algorithm: string;
+  log_event_id: string;
+  line_number: number;
+  event_timestamp: string | null;
+  content: string;
+  split_role: string;
+  predicted_risk: string;
+  class_confidence: number | null;
+  anomaly_score: number | null;
+  score_kind: string;
+  explanation: { summary?: string; reasons?: unknown[] };
+  attached_label: string | null;
+  attached_provenance: string | null;
+  verified_label: string | null;
+}
+
+export interface RiskPredictionPage {
+  total: number;
+  metrics_status: string | null;
+  metrics_note: string;
+  items: RiskPrediction[];
+}
+
+export interface RiskLabel {
+  id: string;
+  log_event_id: string;
+  risk_level: string;
+  provenance: string;
 }
 
 export interface LiveCollector {

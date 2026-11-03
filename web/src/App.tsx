@@ -6,6 +6,7 @@ import { AnomaliesPage } from "@/pages/AnomaliesPage";
 import { InvestigationsPage } from "@/pages/InvestigationsPage";
 import { LogsPage } from "@/pages/LogsPage";
 import { OverviewPage } from "@/pages/OverviewPage";
+import { RiskPage } from "@/pages/RiskPage";
 import { RulesPage } from "@/pages/RulesPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { SourcesPage } from "@/pages/SourcesPage";
@@ -25,6 +26,7 @@ export function App() {
             <Route path="alerts" element={<AlertsPage />} />
             <Route path="investigations" element={<InvestigationsPage />} />
             <Route path="anomalies" element={<AnomaliesPage />} />
+            <Route path="risk" element={<RiskPage />} />
             <Route path="sources" element={<SourcesPage />} />
             <Route path="rules" element={<RulesPage />} />
             <Route path="settings" element={<SettingsPage />} />

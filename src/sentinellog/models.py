@@ -4,6 +4,8 @@ Milestone 1 writes log sources, ingestion jobs, templates, events, parse errors,
 and audit rows. Milestone 2 evaluates detection_rules and writes security_alerts
 from stored log_events. Milestone 3 writes anomaly_models and anomaly_scores.
 Those scores are not rule alerts and are not ground truth. Investigations group stored evidence.
+Risk labels, risk models, and risk predictions are a separate classification path.
+Predicted risk levels are not ground truth, and weak rule labels are not verified labels.
 """
 
 import uuid
@@ -723,4 +725,157 @@ class LivePosition(Base):
         CheckConstraint("byte_offset >= 0", name="ck_live_positions_byte_offset"),
         CheckConstraint("line_sha256 ~ '^[0-9a-f]{64}$'", name="ck_live_positions_sha"),
         Index("ix_live_positions_collector_id", "collector_id"),
+    )
+
+
+class RiskLabel(Base):
+    """A reviewer label or an explicitly weak rule label for one stored log event.
+
+    Provenance `weak_rule` is copied from alert severity. It is not verified ground truth.
+    `verified_manual` and `verified_import` are the only provenances that may be used
+    as ground truth for a real accuracy number.
+    """
+
+    __tablename__ = "risk_labels"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    log_event_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("log_events.id", ondelete="CASCADE"), nullable=False
+    )
+    risk_level: Mapped[str] = mapped_column(String(16), nullable=False)
+    provenance: Mapped[str] = mapped_column(String(32), nullable=False)
+    reviewer: Mapped[str | None] = mapped_column(String(200))
+    note: Mapped[str | None] = mapped_column(Text)
+    rule_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("log_event_id", "provenance", name="uq_risk_labels_event_provenance"),
+        CheckConstraint(
+            "risk_level IN ('LOW','MEDIUM','HIGH','CRITICAL')",
+            name="ck_risk_labels_level",
+        ),
+        CheckConstraint(
+            "provenance IN ('verified_manual','verified_import','weak_rule')",
+            name="ck_risk_labels_provenance",
+        ),
+        Index("ix_risk_labels_log_event_id", "log_event_id"),
+        Index("ix_risk_labels_provenance", "provenance"),
+    )
+
+
+class RiskModel(Base):
+    """A risk-classification model. Metrics stay null until a held-out verified test exists."""
+
+    __tablename__ = "risk_models"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    algorithm: Mapped[str] = mapped_column(String(64), nullable=False)
+    task: Mapped[str] = mapped_column(String(32), nullable=False)
+    dataset_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    dataset_version: Mapped[str] = mapped_column(String(128), nullable=False)
+    label_provenance: Mapped[str] = mapped_column(String(32), nullable=False)
+    random_seed: Mapped[int] = mapped_column(Integer, nullable=False)
+    n_train: Mapped[int] = mapped_column(Integer, nullable=False)
+    n_test: Mapped[int] = mapped_column(Integer, nullable=False)
+    metrics: Mapped[dict | None] = mapped_column(JSONB(none_as_null=True))
+    metrics_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    metrics_note: Mapped[str] = mapped_column(Text, nullable=False)
+    config: Mapped[dict] = mapped_column(
+        JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb")
+    )
+    artifact_path: Mapped[str] = mapped_column(Text, nullable=False)
+    artifact_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    sklearn_version: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("version", name="uq_risk_models_version"),
+        CheckConstraint("version >= 1", name="ck_risk_models_version"),
+        CheckConstraint(
+            "algorithm IN ('isolation_forest','random_forest','tfidf_logreg')",
+            name="ck_risk_models_algorithm",
+        ),
+        CheckConstraint(
+            "task IN ('multiclass_risk','binary_anomaly','unsupervised_band')",
+            name="ck_risk_models_task",
+        ),
+        CheckConstraint(
+            "metrics_status IN ('evaluated','not_evaluated','weak_agreement_only')",
+            name="ck_risk_models_metrics_status",
+        ),
+        CheckConstraint("n_train >= 0", name="ck_risk_models_n_train"),
+        CheckConstraint("n_test >= 0", name="ck_risk_models_n_test"),
+        CheckConstraint(
+            "metrics IS NULL OR jsonb_typeof(metrics) = 'object'",
+            name="ck_risk_models_metrics_object",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(config) = 'object'",
+            name="ck_risk_models_config_object",
+        ),
+        CheckConstraint("artifact_sha256 ~ '^[0-9a-f]{64}$'", name="ck_risk_models_sha"),
+        Index("ix_risk_models_created_at", "created_at"),
+        Index("ix_risk_models_dataset_name", "dataset_name"),
+    )
+
+
+class RiskPrediction(Base):
+    """One log event scored by a risk model. The predicted level is not a verified label."""
+
+    __tablename__ = "risk_predictions"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    model_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("risk_models.id", ondelete="CASCADE"), nullable=False
+    )
+    log_event_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("log_events.id", ondelete="CASCADE"), nullable=False
+    )
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("log_sources.id", ondelete="CASCADE"), nullable=False
+    )
+    split_role: Mapped[str] = mapped_column(String(16), nullable=False)
+    predicted_risk: Mapped[str] = mapped_column(String(16), nullable=False)
+    class_confidence: Mapped[float | None] = mapped_column(Double)
+    anomaly_score: Mapped[float | None] = mapped_column(Double)
+    score_kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    explanation: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("model_id", "log_event_id", name="uq_risk_predictions_model_event"),
+        CheckConstraint(
+            "split_role IN ('train','test','inference')",
+            name="ck_risk_predictions_split",
+        ),
+        CheckConstraint(
+            "predicted_risk IN ('LOW','MEDIUM','HIGH','CRITICAL')",
+            name="ck_risk_predictions_level",
+        ),
+        CheckConstraint(
+            "class_confidence IS NULL OR (class_confidence >= 0 AND class_confidence <= 1)",
+            name="ck_risk_predictions_confidence",
+        ),
+        CheckConstraint(
+            "score_kind IN ('class_probability','anomaly_score','both')",
+            name="ck_risk_predictions_score_kind",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(explanation) = 'object'",
+            name="ck_risk_predictions_explanation",
+        ),
+        Index("ix_risk_predictions_model_id", "model_id"),
+        Index("ix_risk_predictions_source_id", "source_id"),
+        Index("ix_risk_predictions_log_event_id", "log_event_id"),
     )

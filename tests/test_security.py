@@ -19,6 +19,9 @@ def test_bucket_for_expensive_routes():
     assert bucket_for("POST", "/api/v1/detection/run") == "detect"
     assert bucket_for("POST", "/api/v1/ml/train") == "ml"
     assert bucket_for("POST", "/api/v1/ml/score") == "ml"
+    assert bucket_for("POST", "/api/v1/risk/train") == "risk"
+    assert bucket_for("POST", "/api/v1/risk/bands") == "risk"
+    assert bucket_for("GET", "/api/v1/risk/predictions") is None
     assert bucket_for("GET", "/api/v1/ml/scores") is None
     assert bucket_for("GET", "/api/v1/investigations/abc/report.pdf") == "pdf"
     assert bucket_for("GET", "/api/v1/investigations/abc/evidence") is None
