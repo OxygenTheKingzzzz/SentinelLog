@@ -1,0 +1,21 @@
+# Starts PostgreSQL for local SentinelLog development.
+# The application image is not containerized in milestone 1; run the API on the host.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: sentinellog
+      POSTGRES_PASSWORD: sentinellog
+      POSTGRES_DB: sentinellog
+    ports:
+      - "5432:5432"
+    volumes:
+      - sentinellog_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinellog -d sentinellog"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  sentinellog_pg:
