@@ -1,8 +1,98 @@
 # SentinelLog
 
-Local SOC / Linux log intelligence platform. It ingests historical syslog, stores it in PostgreSQL, runs a rule-based detection engine and an experimental anomaly scorer, and serves a React dashboard over those stored rows. It can also tail an explicitly allowlisted local file, read-only, into a separate live source. It does not write PDF reports.
+Local SOC / Linux log intelligence platform. It ingests historical syslog into PostgreSQL, runs a rule engine and an experimental anomaly scorer, and serves a React dashboard. It can tail an allowlisted local file into a separate live source, and it can export an investigation as JSON or PDF. The bundled sample is the [Loghub](https://github.com/logpai/loghub) Linux_2k log (about 2,000 lines from host `combo`). That file has no malicious or benign labels. Alerts are rule findings, not confirmed compromise.
 
-The bundled sample is the [Loghub](https://github.com/logpai/loghub) Linux_2k log (about 2,000 historical lines from host `combo`). There are no malicious/benign labels in that dataset. Detection alerts are rule findings on those unlabeled logs, not confirmed compromise.
+A longer map of the system is in `/cursor/stores/self/docs/delivery.md`.
+
+## Setup
+
+Python 3.12 (this machine used 3.12.3; the package requires `>=3.12`) and Node.js 22 (this machine used 22.23.4). PostgreSQL 16.
+
+### Postgres with Docker
+
+`docker-compose.yml` starts Postgres 16 and creates the `sentinellog` database. It does not create the test database.
+
+```bash
+docker compose up -d
+docker compose exec postgres psql -U sentinellog -d sentinellog -c "CREATE DATABASE sentinellog_test"
+```
+
+### Postgres without Docker
+
+This VM had no Docker daemon. PostgreSQL 16 from apt (`postgresql-16` and `postgresql-client-16`) was started with `pg_ctlcluster` because the package init script was blocked:
+
+```bash
+sudo apt-get install -y postgresql-16 postgresql-client-16
+sudo pg_ctlcluster 16 main start
+sudo -u postgres psql -c "CREATE ROLE sentinellog LOGIN PASSWORD 'sentinellog' CREATEDB"
+sudo -u postgres psql -c "CREATE DATABASE sentinellog OWNER sentinellog"
+sudo -u postgres psql -c "CREATE DATABASE sentinellog_test OWNER sentinellog"
+```
+
+### Environment
+
+Copy `.env.example` to `.env`. Do not commit `.env`. The example file sets:
+
+- `DATABASE_URL` — `postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/sentinellog`
+- `SOURCE_YEAR` — optional default only when a new source omits a year. Leave it unset for arbitrary sources. It is not how Linux_2k gets 2005.
+- `MAX_UPLOAD_BYTES` — default 33554432
+- `LOG_LEVEL` — `INFO`
+- `CORS_ORIGINS` — `http://127.0.0.1:5173,http://localhost:5173`
+- `RATE_LIMIT_REQUESTS` — 30
+- `RATE_LIMIT_WINDOW_SECONDS` — 60
+- `DEBUG` — `false`
+- `ANOMALY_ARTIFACT_DIR` — optional, default `var/anomaly-models`
+- `SENTINELLOG_TEST_DATABASE_URL` — `postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/sentinellog_test`
+
+`LIVE_ALLOW_ROOTS` is optional. Empty means no live file can be authorized. It is a path-separator list of absolute directories.
+
+### Install, migrate, and load Linux_2k
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e ".[dev]"
+export DATABASE_URL=postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/sentinellog
+alembic upgrade head
+python -m sentinellog.cli import-bundled
+python -m sentinellog.cli detect --source-name linux-2k
+python -m sentinellog.cli anomaly-train --source-name linux-2k
+python -m sentinellog.cli anomaly-score --source-name linux-2k
+```
+
+`import-bundled` loads templates, imports `datasets/Linux_2k.log` with source year 2005, validates stored rows against `datasets/Linux_2k.log_structured.csv`, then backfills null timestamps. A second run reports 2000 duplicates and still exits 0 when validation matches. `detect` evaluates the enabled rules and does not insert a second copy of the same finding. Train writes an Isolation Forest artifact. Score writes `anomaly_scores`. Neither writes `security_alerts`.
+
+### API and UI
+
+In one shell, from the repo root with the virtualenv active:
+
+```bash
+export DATABASE_URL=postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/sentinellog
+python -m sentinellog.cli serve --host 127.0.0.1 --port 8000
+```
+
+In another shell:
+
+```bash
+cd web
+npm ci
+npm run dev -- --host 127.0.0.1 --port 5173
+```
+
+Open http://127.0.0.1:5173 . Vite proxies `/api` and `/health` to port 8000.
+
+### Tests
+
+These commands passed on this machine. `pytest` truncates `sentinellog_test`. It does not touch the dev database unless `SENTINELLOG_TEST_DATABASE_URL` points there.
+
+```bash
+export SENTINELLOG_TEST_DATABASE_URL=postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/sentinellog_test
+pytest
+ruff check src tests
+cd web && npm test && npm run build
+```
+
+`npm test` is Vitest. `npm run build` is `tsc --noEmit` and the Vite production build. `.github/workflows/ci.yml` runs the same checks against a Postgres service. That workflow has not run on GitHub: this repo has no remote.
 
 ## What the Level column is
 
@@ -30,97 +120,32 @@ python -m sentinellog.cli backfill --source-name linux-2k --year 2005
 
 `backfill` without `--year` uses the year already stored on that source. It does not assume 2005. Pass `--year` only to fill a null `source_year`. A different stored year is refused, and existing timestamps are not rewritten.
 
-## Run
-
-Python 3.12+, then PostgreSQL 16.
-
-With Docker (preferred when a daemon is available):
-
-```bash
-docker compose up -d
-docker compose exec postgres psql -U sentinellog -d sentinellog -c "CREATE DATABASE sentinellog_test"
-python3 -m venv .venv
-. .venv/bin/activate
-pip install -e ".[dev]"
-export DATABASE_URL=postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/sentinellog
-alembic upgrade head
-python -m sentinellog.cli import-bundled
-python -m sentinellog.cli detect --source-name linux-2k
-python -m sentinellog.cli anomaly-train --source-name linux-2k
-python -m sentinellog.cli anomaly-score --source-name linux-2k
-python -m sentinellog.cli serve
-```
-
-This VM had no Docker daemon. Postgres 16 was installed with apt and started with `pg_ctlcluster` because the package init script was blocked. Tests ran against that local server, using database `sentinellog_test`:
-
-```bash
-sudo pg_ctlcluster 16 main start
-sudo -u postgres psql -c "CREATE ROLE sentinellog LOGIN PASSWORD 'sentinellog' CREATEDB"
-sudo -u postgres psql -c "CREATE DATABASE sentinellog OWNER sentinellog"
-sudo -u postgres psql -c "CREATE DATABASE sentinellog_test OWNER sentinellog"
-python3 -m venv .venv
-. .venv/bin/activate
-pip install -e ".[dev]"
-export DATABASE_URL=postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/sentinellog
-alembic upgrade head
-python -m sentinellog.cli import-bundled
-python -m sentinellog.cli detect --source-name linux-2k
-python -m sentinellog.cli anomaly-train --source-name linux-2k
-python -m sentinellog.cli anomaly-score --source-name linux-2k
-export SENTINELLOG_TEST_DATABASE_URL=postgresql+psycopg://sentinellog:sentinellog@127.0.0.1:5432/sentinellog_test
-pytest
-ruff check src tests
-ruff format --check src tests
-```
-
-`pytest` truncates `SENTINELLOG_TEST_DATABASE_URL`. It does not use the dev database unless you point that variable at it.
-
-`import-bundled` loads templates, imports `datasets/Linux_2k.log` with source year 2005, validates every stored row against `datasets/Linux_2k.log_structured.csv`, then backfills null timestamps. A second run reports 2000 duplicates and still exits 0 when validation matches. `detect` evaluates the enabled rules. Running it again does not insert a second copy of the same finding.
-
-Copy `.env.example` to `.env` for local defaults. Do not commit `.env`.
-
 ## API
 
-- `POST /api/v1/sources`
-- `POST /api/v1/sources/{id}/ingest/raw` multipart field `file` (`.log` / `.txt`)
-- `POST /api/v1/sources/{id}/ingest/templates` (`.csv`)
-- `POST /api/v1/sources/{id}/ingest/structured?mode=validate|import` (`.csv`)
-- `GET /api/v1/events` filters: `component`, `event_id`, `hostname`, `month`, `day`, `q`, `occurred_from`, `occurred_to`, `line_number`
-- `GET /api/v1/events/facets` and `GET /api/v1/overview` (optional `source_id`)
-- `GET /api/v1/audit` and `GET /api/v1/settings` (database host and name only; no password)
-- `GET /api/v1/sources/{id}/quality`
-- `GET /api/v1/jobs/{id}` and `GET /api/v1/jobs/{id}/errors`
-- `GET /api/v1/rules` and `PATCH /api/v1/rules/{id}` (`enabled`, `threshold`, `window_seconds`, `window_type`)
-- `POST /api/v1/detection/run?source_id=` optional source; omit it to run every source
-- `GET /api/v1/alerts` filters: `severity`, `status`, `rule` (name or id), `source_id`; `sort` is `window_start`, `created_at`, or `severity`
-- `GET/POST /api/v1/investigations`, plus `/{id}`, `/{id}/links`, `/{id}/status`, `/{id}/notes`, `/{id}/graph`, `/{id}/evidence`
-- `POST /api/v1/alerts/{id}/status` with `status` and a non-empty `note`
-- `POST /api/v1/ml/train` and `POST /api/v1/ml/score` (optional `source_id` / required `source_id`)
-- `GET /api/v1/ml/models`, `GET /api/v1/ml/models/latest`, `GET /api/v1/ml/models/{id}`
-- `GET /api/v1/ml/scores` filters: `source_id`, `model_id`, `flagged` (`isolation`, `baseline`, or `either`)
-- `GET /health`
+Routes are under `/api/v1` unless noted. `GET /health` checks the database.
 
-`occurred_from` / `occurred_to` apply to `event_timestamp`, which is null until a year is configured or backfilled. `month` and `day` filter the syslog calendar fields without a year.
+- Sources and ingest: `POST/GET /sources`, `POST /sources/{id}/ingest/raw|templates|structured`
+- Search: `GET /events`, `GET /events/facets`, `GET /events/{id}`, `GET /overview`, `GET /sources/{id}/quality`, `GET /templates`
+- Jobs: `GET /jobs`, `GET /jobs/{id}`, `GET /jobs/{id}/errors`
+- Rules and alerts: `GET /detection/status`, `POST /detection/run`, `GET/PATCH /rules`, `GET /alerts`, `POST /alerts/{id}/status`
+- Anomalies: `GET /ml/status`, `POST /ml/train`, `POST /ml/score`, `GET /ml/models`, `GET /ml/models/latest`, `GET /ml/scores`
+- Investigations: `GET/POST /investigations`, `POST /{id}/links`, `PATCH /{id}/status`, `POST /{id}/notes`, `GET /{id}/graph`, `GET /{id}/evidence`, `GET /{id}/report.pdf`
+- Live: `GET /live/status`, `GET /live/collectors`, `POST /live/files`, `POST /live/collectors/{id}/start|stop`, `GET /live/stream`
+- Other: `GET /audit`, `GET /settings`, `GET /incidents/status`, `GET /reports/status`
 
-Alert lifecycle values are `open`, `investigating`, `resolved`, and `false_positive`. A status change stores the note and an `audit_logs` row. Changing a rule's threshold or window bumps `detection_rules.version` and writes an audit row. Enabling or disabling a rule is audited and does not bump the version. Severity on a rule or alert is an analyst priority (`low`, `medium`, `high`, `critical`), not a verified incident.
+`GET /settings` returns the database driver, host, port, and name. It does not return the password. `/incidents/status` stays unimplemented. `/reports/status` points at the investigation JSON and PDF exports.
 
-Uploads are size-limited (`MAX_UPLOAD_BYTES`, default 32 MiB), must be UTF-8 text without NUL bytes, and must use an allowed extension. Filenames that contain a path or `..` are rejected. Log bytes are stored and parsed. They are not executed and are not passed to a shell.
-
-`GET /api/v1/detection/status` reports that the rule engine is implemented. `GET /api/v1/ml/status` reports that anomaly scoring is implemented and that the dataset has no ground truth (`metrics` is null). Analyst workspaces live at `/api/v1/investigations`. `GET /api/v1/live/status` reports that file tailing is implemented. `GET /api/v1/reports/status` reports that investigation JSON and PDF export is implemented. `/incidents` still reports that confirmed incidents are not implemented. Anomaly scores are stored in `anomaly_scores`, not in `security_alerts`. Live lines are stored with `origin=live_file` on their own source. They are not inserted into `linux-2k`.
-
-The dashboard is `web/`. How to run it is in `/cursor/stores/self/docs/milestone-4.md`. How to authorize a live file is in `/cursor/stores/self/docs/milestone-5.md`. Investigation export is in `/cursor/stores/self/docs/milestone-6.md`. Request limits, CORS, and error handling are in `/cursor/stores/self/docs/milestone-7.md`.
-
-`CORS_ORIGINS` is a comma-separated list and defaults to `http://127.0.0.1:5173` and `http://localhost:5173`. Import, detection, anomaly train/score, and PDF export are rate-limited in process (`RATE_LIMIT_REQUESTS` per `RATE_LIMIT_WINDOW_SECONDS`, default 30 per 60 seconds). A client that exceeds the limit gets HTTP 429 JSON. `DEBUG=false` makes unhandled errors JSON with no stack trace. Copy `.env.example` to `.env`; `.env` is gitignored.
+Uploads are size-limited, must be UTF-8 text without NUL bytes, and must use an allowed extension. Filenames that contain a path or `..` are rejected. Log bytes are not passed to a shell.
 
 ## Layout
 
 - `src/sentinellog/ingestion/` parsing, template match, validation, jobs
 - `src/sentinellog/normalization/` timestamps, optional IP/username, search and quality queries
-- `src/sentinellog/detection/` builtin rules, tumbling and sliding windows, backfill, alert lifecycle
-- `src/sentinellog/ml/` hourly features, Isolation Forest, robust-z baseline, model artifacts
-- `src/sentinellog/investigations/` analyst workspaces, correlation graph, JSON and PDF reports
-- `src/sentinellog/live/` allowlisted file tail, checkpoints, collector health, SSE
-- `web/` React dashboard (Vite). It reads the API and does not invent counts
-- Package boundaries only: `incidents`, `reports`
+- `src/sentinellog/detection/` builtin rules, windows, backfill, alert lifecycle
+- `src/sentinellog/ml/` hourly features, Isolation Forest, robust-z baseline
+- `src/sentinellog/investigations/` workspaces, graph, JSON and PDF reports
+- `src/sentinellog/live/` allowlisted file tail and SSE
+- `web/` React dashboard
+- `incidents` remains a status stub
 
-Tables are created by Alembic. Revision `6a757cd7ca97` is the initial schema. Revision `ed1cc76d8439` adds rule versions, alert evidence, the four-status lifecycle, and `alert_notes`. Revision `c4e8b1a09d27` adds `anomaly_models` and `anomaly_scores`. Revision `d5f2a8c13e40` adds `investigation_alerts` and `investigation_notes`. Revision `e7b1c4d09a52` adds `live_collectors` and `live_positions` and the `live_file` source kind. It does not delete events, alerts, or scores.
+Tables are created by Alembic. `6a757cd7ca97` is the initial schema. `ed1cc76d8439` adds rule versions and alert notes. `c4e8b1a09d27` adds anomaly models and scores. `d5f2a8c13e40` adds investigation links and notes. `e7b1c4d09a52` adds live collectors. Later revisions do not delete events, alerts, or scores.
