@@ -1,8 +1,15 @@
 import type { ReactNode } from "react";
 import { ApiError } from "@/lib/api";
 
-export function Loading({ label = "Loading" }: { label?: string }) {
-  return <p className="px-1 py-6 text-mute">{label}…</p>;
+export function Loading({ label = "Loading", rows = 4 }: { label?: string; rows?: number }) {
+  return (
+    <div role="status" aria-busy="true" aria-label={label} className="space-y-2 px-1 py-2">
+      <p className="text-[11px] text-mute">{label}…</p>
+      {Array.from({ length: rows }, (_, index) => (
+        <div key={index} className="h-8 animate-pulse rounded border border-line bg-panel-2" />
+      ))}
+    </div>
+  );
 }
 
 export function ErrorNote({ error }: { error: unknown }) {

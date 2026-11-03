@@ -4,7 +4,8 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { ApiError, api, type RealisticModel, type RiskModelResult } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
 import { useSelection } from "@/store/selection";
-import { Empty, ErrorNote, Loading } from "@/components/States";
+import { ChartSkeleton, PanelSkeleton, TableSkeleton } from "@/components/PageSkeleton";
+import { Empty, ErrorNote } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,7 +91,6 @@ export function RiskPage() {
         </p>
       </div>
       {message ? <p className="text-xs text-cyan">{message}</p> : null}
-      {experiments.isLoading ? <Loading label="Loading evaluations" /> : null}
       {experiments.isError ? <ErrorNote error={experiments.error} /> : null}
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_280px]">
@@ -99,7 +99,9 @@ export function RiskPage() {
             <CardTitle>Risk distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            {(distribution.data?.counts.length ?? 0) === 0 ? (
+            {distribution.isLoading ? (
+              <ChartSkeleton label="Loading risk distribution" />
+            ) : (distribution.data?.counts.length ?? 0) === 0 ? (
               <Empty>No risk predictions for this source yet.</Empty>
             ) : (
               <div className="h-52">
@@ -169,6 +171,25 @@ export function RiskPage() {
           <CardTitle>Benchmark comparison (rebalanced sample)</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
+          {experiments.isLoading ? (
+            <TableSkeleton
+              label="Loading evaluations"
+              headers={[
+                "Dataset",
+                "Model",
+                "Labels",
+                "Train / test",
+                "Accuracy",
+                "Precision",
+                "Recall",
+                "F1",
+                "ROC-AUC",
+                "PR-AUC",
+              ]}
+              rows={6}
+            />
+          ) : (
+          <>
           <table className="w-full text-left text-xs">
             <thead className="text-mute">
               <tr>
@@ -220,6 +241,8 @@ export function RiskPage() {
               </p>
             ))}
           </div>
+          </>
+          )}
         </CardContent>
       </Card>
 
@@ -228,7 +251,26 @@ export function RiskPage() {
           <CardTitle>Realistic prevalence and chronological holdout</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          {realistic.isLoading ? <Loading label="Loading realistic evaluations" /> : null}
+          {realistic.isLoading ? (
+            <TableSkeleton
+              label="Loading realistic evaluations"
+              headers={[
+                "Dataset",
+                "Protocol",
+                "Model",
+                "Test prevalence",
+                "Accuracy",
+                "Precision",
+                "Recall",
+                "F1",
+                "ROC-AUC",
+                "PR-AUC",
+                "FP / 1,000 normal",
+              ]}
+              rows={8}
+            />
+          ) : (
+          <>
           {realistic.data && realistic.data.experiments.length === 0 ? (
             <Empty>{realistic.data.detail ?? "Realistic prevalence results have not been generated."}</Empty>
           ) : null}
@@ -319,6 +361,8 @@ export function RiskPage() {
               })}
             </tbody>
           </table>
+          </>
+          )}
         </CardContent>
       </Card>
 
@@ -358,7 +402,10 @@ export function RiskPage() {
           <CardTitle>Stored model runs</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-xs">
-          {(stored.data ?? []).length === 0 ? <Empty>No risk model is stored for this database.</Empty> : null}
+          {stored.isLoading ? <PanelSkeleton label="Loading stored models" rows={3} /> : null}
+          {!stored.isLoading && (stored.data ?? []).length === 0 ? (
+            <Empty>No risk model is stored for this database.</Empty>
+          ) : null}
           {(stored.data ?? []).map((model) => (
             <div key={model.id} className="rounded border border-line px-2 py-1">
               <div>
@@ -381,11 +428,26 @@ export function RiskPage() {
           <CardTitle>Predicted risk</CardTitle>
         </CardHeader>
         <CardContent>
-          {predictions.isLoading ? <Loading label="Loading predictions" /> : null}
+          {predictions.isLoading ? (
+            <TableSkeleton
+              label="Loading predictions"
+              headers={[
+                "Line",
+                "Time (UTC)",
+                "Prediction",
+                "Class probability",
+                "Anomaly score",
+                "Verified label",
+                "Content",
+              ]}
+            />
+          ) : null}
           {predictions.isError && predictions.error instanceof ApiError && predictions.error.status !== 404 ? (
             <ErrorNote error={predictions.error} />
           ) : null}
-          {rows.length === 0 ? <Empty>Fit score bands or train on verified labels to see predictions.</Empty> : null}
+          {!predictions.isLoading && rows.length === 0 ? (
+            <Empty>Fit score bands or train on verified labels to see predictions.</Empty>
+          ) : null}
           {rows.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">

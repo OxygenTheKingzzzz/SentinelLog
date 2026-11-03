@@ -4,7 +4,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
 import { useSelection } from "@/store/selection";
-import { Empty, ErrorNote, Loading } from "@/components/States";
+import { PanelSkeleton, TableSkeleton } from "@/components/PageSkeleton";
+import { Empty, ErrorNote } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -104,7 +105,12 @@ export function AlertsPage() {
             </Link>
           ) : null}
         </div>
-        {alerts.isLoading ? <Loading label="Loading alerts" /> : null}
+        {alerts.isLoading ? (
+          <TableSkeleton
+            label="Loading alerts"
+            headers={["", "Severity", "Status", "Rule", "Title", "Evidence"]}
+          />
+        ) : null}
         {alerts.isError ? <ErrorNote error={alerts.error} /> : null}
         {alerts.data && alerts.data.total === 0 ? <Empty>No rule alerts match these filters.</Empty> : null}
         {alerts.data && alerts.data.total > 0 ? (
@@ -170,8 +176,11 @@ export function AlertsPage() {
         ) : null}
       </div>
       <aside className="rounded-lg border border-line bg-panel p-3 text-xs">
-        {detail.isLoading ? <Loading /> : null}
+        {alerts.isLoading || detail.isLoading ? <PanelSkeleton label="Loading alert" rows={6} /> : null}
         {detail.isError ? <ErrorNote error={detail.error} /> : null}
+        {!alerts.isLoading && !detail.isLoading && !detail.data ? (
+          <Empty>Open an alert to see its evidence and notes.</Empty>
+        ) : null}
         {detail.data ? (
           <div className="space-y-2">
             <div className="flex flex-wrap gap-1">

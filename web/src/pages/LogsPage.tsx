@@ -4,7 +4,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { api, type LogEvent } from "@/lib/api";
 import { csvEscape, downloadText, formatWhen } from "@/lib/format";
 import { useSelection } from "@/store/selection";
-import { Empty, ErrorNote, Loading } from "@/components/States";
+import { TableSkeleton } from "@/components/PageSkeleton";
+import { Empty, ErrorNote } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -163,7 +164,12 @@ export function LogsPage() {
             </Button>
           ) : null}
         </div>
-        {events.isLoading ? <Loading label="Loading events" /> : null}
+        {events.isLoading ? (
+          <TableSkeleton
+            label="Loading events"
+            headers={["", "Line", "Time (UTC)", "Host", "Component", "Event", "Risk", "Content"]}
+          />
+        ) : null}
         {events.isError ? <ErrorNote error={events.error} /> : null}
         {events.data && events.data.total === 0 ? <Empty>No events match these filters.</Empty> : null}
         {events.data && events.data.total > 0 ? (

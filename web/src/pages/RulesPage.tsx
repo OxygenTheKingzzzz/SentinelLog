@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { api, type DetectionRun, type Rule } from "@/lib/api";
 import { useSelection } from "@/store/selection";
-import { ErrorNote, Loading } from "@/components/States";
+import { RuleListSkeleton } from "@/components/PageSkeleton";
+import { ErrorNote } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -44,7 +45,7 @@ export function RulesPage() {
           ))}
         </ul>
       ) : null}
-      {rules.isLoading ? <Loading label="Loading rules" /> : null}
+      {rules.isLoading ? <RuleListSkeleton /> : null}
       {rules.isError ? <ErrorNote error={rules.error} /> : null}
       <div className="space-y-2">
         {(rules.data ?? []).map((rule) => (

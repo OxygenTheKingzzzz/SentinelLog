@@ -67,7 +67,7 @@ export function Shell() {
               value={sourceId ?? ""}
               onChange={(event) => setSourceId(event.target.value || null)}
             >
-              <option value="">All sources</option>
+              <option value="">{sources.isLoading ? "Loading sources…" : "All sources"}</option>
               {(sources.data ?? []).map((source) => (
                 <option key={source.id} value={source.id}>
                   {source.name}

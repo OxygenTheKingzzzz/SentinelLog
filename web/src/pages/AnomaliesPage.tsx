@@ -13,7 +13,8 @@ import {
 import { ApiError, api } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
 import { useSelection } from "@/store/selection";
-import { Empty, ErrorNote, Loading } from "@/components/States";
+import { ChartSkeleton, PanelSkeleton, TableSkeleton } from "@/components/PageSkeleton";
+import { Empty, ErrorNote } from "@/components/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/input";
 
@@ -48,7 +49,23 @@ export function AnomaliesPage() {
         <div className="text-xs font-medium text-amber">No ground truth / not a confirmed incident</div>
         <p className="mt-1 text-xs text-mute">{status.data?.metrics_note ?? "Loading the model disclaimer…"}</p>
       </div>
-      {model.isLoading ? <Loading label="Loading model" /> : null}
+      {model.isLoading ? (
+        <div className="space-y-3">
+          <div className="grid gap-2 md:grid-cols-4">
+            {["Model", "Window", "Train / validation", "Thresholds"].map((label) => (
+              <div key={label} className="rounded-lg border border-line bg-panel px-3 py-2">
+                <div className="text-[11px] uppercase tracking-wider text-mute">{label}</div>
+                <div className="mt-2 h-4 w-24 animate-pulse rounded bg-panel-2" />
+              </div>
+            ))}
+          </div>
+          <ChartSkeleton label="Loading model" />
+          <TableSkeleton
+            label="Loading scores"
+            headers={["Window (UTC)", "Split", "Events", "Isolation", "Baseline", "Flags"]}
+          />
+        </div>
+      ) : null}
       {model.error instanceof ApiError && model.error.status === 404 ? (
         <Empty>No anomaly model is stored. Train one with the CLI before this page has scores.</Empty>
       ) : null}
@@ -101,8 +118,20 @@ export function AnomaliesPage() {
               {scores.data ? `${scores.data.items.length} of ${scores.data.total} windows` : ""}
             </span>
           </div>
-          {scores.isLoading ? <Loading label="Loading scores" /> : null}
           {scores.isError ? <ErrorNote error={scores.error} /> : null}
+          {scores.isLoading ? (
+            <div className="space-y-3">
+              <ChartSkeleton label="Loading scores" />
+              <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <TableSkeleton
+                  label="Loading score windows"
+                  headers={["Window (UTC)", "Split", "Events", "Isolation", "Baseline", "Flags"]}
+                />
+                <PanelSkeleton label="Loading window" rows={6} />
+              </div>
+            </div>
+          ) : (
+            <>
           <Card>
             <CardHeader>
               <CardTitle>Forest vs baseline</CardTitle>
@@ -201,6 +230,8 @@ export function AnomaliesPage() {
               )}
             </aside>
           </div>
+            </>
+          )}
         </>
       ) : null}
     </div>

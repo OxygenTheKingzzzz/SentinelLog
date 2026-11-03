@@ -3,7 +3,8 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
 import { useSelection } from "@/store/selection";
-import { Empty, ErrorNote, Loading } from "@/components/States";
+import { PanelSkeleton, TableSkeleton } from "@/components/PageSkeleton";
+import { Empty, ErrorNote } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -123,9 +124,15 @@ export function SourcesPage() {
           </Button>
         </form>
         {authorize.isError ? <ErrorNote error={authorize.error} /> : null}
-        {collectors.isLoading ? <Loading label="Loading collectors" /> : null}
+        {collectors.isLoading ? (
+          <TableSkeleton
+            label="Loading collectors"
+            headers={["Source", "Status", "Imported", "Duplicates", "Offset", "Path", ""]}
+            rows={3}
+          />
+        ) : null}
         {collectors.isError ? <ErrorNote error={collectors.error} /> : null}
-        {collectors.data && collectors.data.length === 0 ? (
+        {!collectors.isLoading && collectors.data && collectors.data.length === 0 ? (
           <Empty>No authorized live files.</Empty>
         ) : null}
         {collectors.data && collectors.data.length > 0 ? (
@@ -242,8 +249,13 @@ export function SourcesPage() {
           duplicates {upload.data.duplicates_skipped}.
         </p>
       ) : null}
-      {jobs.isLoading ? <Loading label="Loading jobs" /> : null}
       {jobs.isError ? <ErrorNote error={jobs.error} /> : null}
+      {jobs.isLoading ? (
+        <TableSkeleton
+          label="Loading jobs"
+          headers={["When (UTC)", "File", "Kind", "Status", "Parsed", "Errors"]}
+        />
+      ) : (
       <div className="overflow-x-auto rounded-lg border border-line">
         <table className="w-full text-left text-xs">
           <thead className="bg-panel text-mute">
@@ -275,14 +287,19 @@ export function SourcesPage() {
             ))}
           </tbody>
         </table>
-        {jobs.data && jobs.data.length === 0 ? <Empty>No ingestion jobs for this selection.</Empty> : null}
+        {!jobs.isLoading && jobs.data && jobs.data.length === 0 ? (
+          <Empty>No ingestion jobs for this selection.</Empty>
+        ) : null}
       </div>
+      )}
       {jobId ? (
         <section className="rounded-lg border border-line bg-panel p-3 text-xs">
           <h2 className="text-[11px] uppercase tracking-wider text-mute">Parse errors</h2>
-          {errors.isLoading ? <Loading /> : null}
+          {errors.isLoading ? <PanelSkeleton label="Loading parse errors" rows={3} /> : null}
           {errors.isError ? <ErrorNote error={errors.error} /> : null}
-          {errors.data && errors.data.length === 0 ? <Empty>This job recorded no per-line errors.</Empty> : null}
+          {!errors.isLoading && errors.data && errors.data.length === 0 ? (
+            <Empty>This job recorded no per-line errors.</Empty>
+          ) : null}
           <ul className="mt-2 space-y-2">
             {(errors.data ?? []).map((error, index) => (
               <li key={`${error.line_number}-${index}`} className="border-t border-line pt-1">

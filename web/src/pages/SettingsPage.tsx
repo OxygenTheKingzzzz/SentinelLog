@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
-import { ErrorNote, Loading } from "@/components/States";
+import { RowsSkeleton, TableSkeleton } from "@/components/PageSkeleton";
+import { ErrorNote } from "@/components/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function SettingsPage() {
@@ -18,7 +19,7 @@ export function SettingsPage() {
             <CardTitle>Database health</CardTitle>
           </CardHeader>
           <CardContent className="text-xs">
-            {health.isLoading ? <Loading /> : null}
+            {health.isLoading ? <RowsSkeleton label="Loading database health" rows={2} /> : null}
             {health.isError ? <ErrorNote error={health.error} /> : null}
             {health.data ? (
               <p>
@@ -38,7 +39,7 @@ export function SettingsPage() {
             <CardTitle>Configuration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1 text-xs">
-            {settings.isLoading ? <Loading /> : null}
+            {settings.isLoading ? <RowsSkeleton label="Loading configuration" rows={7} /> : null}
             {settings.isError ? <ErrorNote error={settings.error} /> : null}
             {settings.data ? (
               <>
@@ -59,8 +60,16 @@ export function SettingsPage() {
           <CardTitle>Audit log</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto p-0">
-          {audit.isLoading ? <Loading /> : null}
           {audit.isError ? <ErrorNote error={audit.error} /> : null}
+          {audit.isLoading ? (
+            <div className="p-3">
+              <TableSkeleton
+                label="Loading audit log"
+                headers={["When (UTC)", "Actor", "Action", "Entity"]}
+              />
+            </div>
+          ) : (
+          <>
           {audit.data ? <p className="px-3 py-1 text-[11px] text-mute">{audit.data.total} entries</p> : null}
           <table className="w-full text-left text-xs">
             <thead className="text-mute">
@@ -85,6 +94,8 @@ export function SettingsPage() {
               ))}
             </tbody>
           </table>
+          </>
+          )}
         </CardContent>
       </Card>
     </div>

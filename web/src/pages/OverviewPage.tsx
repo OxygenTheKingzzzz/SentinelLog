@@ -14,7 +14,8 @@ import {
 import { api } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
 import { useSelection } from "@/store/selection";
-import { ErrorNote, Loading, Stat } from "@/components/States";
+import { OverviewSkeleton } from "@/components/PageSkeleton";
+import { ErrorNote, Stat } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -30,10 +31,10 @@ export function OverviewPage() {
     queryFn: () => api.overview(sourceId),
   });
 
-  if (query.isLoading) return <Loading label="Loading overview" />;
+  if (query.isPending) return <OverviewSkeleton />;
   if (query.isError) return <ErrorNote error={query.error} />;
   const data = query.data;
-  if (!data) return null;
+  if (!data) return <OverviewSkeleton />;
 
   return (
     <div className="space-y-3">

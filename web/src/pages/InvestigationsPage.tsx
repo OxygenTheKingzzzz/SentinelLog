@@ -10,7 +10,8 @@ import { useEffect, useMemo, useState } from "react";
 import { api, type GraphPayload } from "@/lib/api";
 import { downloadText, formatWhen } from "@/lib/format";
 import { useSelection } from "@/store/selection";
-import { Empty, ErrorNote, Loading } from "@/components/States";
+import { ChartSkeleton, InvestigationSkeleton, PanelSkeleton } from "@/components/PageSkeleton";
+import { Empty, ErrorNote } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select, TextArea } from "@/components/ui/input";
@@ -148,7 +149,7 @@ export function InvestigationsPage() {
     <div className="grid gap-3 lg:grid-cols-[260px_minmax(0,1fr)]">
       <div className="space-y-2">
         <h1 className="text-sm font-medium">Investigations</h1>
-        {list.isLoading ? <Loading /> : null}
+        {list.isLoading ? <PanelSkeleton label="Loading investigations" rows={4} /> : null}
         {list.isError ? <ErrorNote error={list.error} /> : null}
         <ul className="space-y-1">
           {(list.data ?? []).map((item) => (
@@ -194,8 +195,14 @@ export function InvestigationsPage() {
         </form>
       </div>
       <div className="space-y-3">
-        {!detail.data ? <Empty>Create an investigation or open one from the list.</Empty> : null}
-        {detail.data ? (
+        {detail.isError ? <ErrorNote error={detail.error} /> : null}
+        {list.isLoading || detail.isLoading || Boolean(list.data?.length && !active) ? (
+          <InvestigationSkeleton />
+        ) : null}
+        {!list.isLoading && !detail.isLoading && !detail.isError && !detail.data && !list.data?.length ? (
+          <Empty>Create an investigation or open one from the list.</Empty>
+        ) : null}
+        {!detail.isLoading && detail.data ? (
           <>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-sm">{detail.data.title}</h2>
@@ -321,6 +328,7 @@ export function InvestigationsPage() {
               <div className="border-b border-line px-2 py-1 text-[11px] text-mute">
                 Correlation graph · {graph.data?.shown_events ?? 0} of {graph.data?.linked_events ?? 0} events shown
               </div>
+              {graph.isError ? <ErrorNote error={graph.error} /> : null}
               {flow ? (
                 <div className="h-[400px]">
                 <ReactFlow
@@ -334,8 +342,10 @@ export function InvestigationsPage() {
                   <Controls />
                 </ReactFlow>
                 </div>
-              ) : (
-                <Loading label="Loading graph" />
+              ) : graph.isError ? null : (
+                <div className="h-[400px] p-3">
+                  <ChartSkeleton label="Loading graph" />
+                </div>
               )}
             </section>
           </>
