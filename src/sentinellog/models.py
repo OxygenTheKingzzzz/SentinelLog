@@ -1,9 +1,9 @@
 """Relational schema for SentinelLog.
 
 Milestone 1 writes log sources, ingestion jobs, templates, events, parse errors,
-and audit rows. detection_rules, security_alerts, investigations, and
-investigation_events exist so later milestones can land without a redesign.
-They are not populated with synthetic detections.
+and audit rows. Milestone 2 evaluates detection_rules and writes security_alerts
+from stored log_events. investigations stay empty until a later milestone.
+Alerts are rule findings, not confirmed incidents.
 """
 
 import uuid
@@ -222,7 +222,7 @@ class IngestionError(Base):
 
 
 class DetectionRule(Base):
-    """Reserved for a later milestone. Milestone 1 does not evaluate rules."""
+    """Configurable threshold rule. `version` increments when the definition changes."""
 
     __tablename__ = "detection_rules"
 
@@ -233,6 +233,9 @@ class DetectionRule(Base):
         Boolean, nullable=False, default=False, server_default=text("false")
     )
     severity: Mapped[str | None] = mapped_column(String(32))
+    version: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1, server_default=text("1")
+    )
     logic: Mapped[dict] = mapped_column(
         JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb")
     )
@@ -243,35 +246,116 @@ class DetectionRule(Base):
         DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
     )
 
+    __table_args__ = (
+        CheckConstraint("version >= 1", name="ck_detection_rules_version"),
+        CheckConstraint(
+            "severity IS NULL OR severity IN ('low','medium','high','critical')",
+            name="ck_detection_rules_severity",
+        ),
+    )
+
 
 class SecurityAlert(Base):
-    """Reserved for a later milestone. Left empty on purpose."""
+    """One rule finding. Severity is analyst priority, not a verified incident outcome."""
 
     __tablename__ = "security_alerts"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    rule_id: Mapped[uuid.UUID | None] = mapped_column(
-        Uuid, ForeignKey("detection_rules.id", ondelete="SET NULL")
+    rule_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("detection_rules.id", ondelete="RESTRICT"), nullable=False
     )
-    log_event_id: Mapped[uuid.UUID | None] = mapped_column(
-        Uuid, ForeignKey("log_events.id", ondelete="SET NULL")
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("log_sources.id", ondelete="CASCADE"), nullable=False
     )
+    rule_version: Mapped[int] = mapped_column(Integer, nullable=False)
     title: Mapped[str] = mapped_column(String(300), nullable=False)
-    severity: Mapped[str | None] = mapped_column(String(32))
+    severity: Mapped[str] = mapped_column(String(32), nullable=False)
     status: Mapped[str] = mapped_column(
         String(32), nullable=False, default="open", server_default=text("'open'")
     )
+    source_address: Mapped[str | None] = mapped_column(String(256))
+    explanation: Mapped[str] = mapped_column(Text, nullable=False)
+    threshold: Mapped[int] = mapped_column(Integer, nullable=False)
+    window_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
+    window_type: Mapped[str] = mapped_column(String(16), nullable=False)
+    window_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    window_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    first_event_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_event_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    event_ids: Mapped[list] = mapped_column(JSONB, nullable=False)
+    line_numbers: Mapped[list] = mapped_column(JSONB, nullable=False)
+    group_value: Mapped[str] = mapped_column(String(256), nullable=False)
+    dedup_key: Mapped[str] = mapped_column(String(700), nullable=False)
     details: Mapped[dict] = mapped_column(
         JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb")
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
     )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
 
     __table_args__ = (
-        CheckConstraint("status IN ('open','closed')", name="ck_security_alerts_status"),
+        UniqueConstraint("dedup_key", name="uq_security_alerts_dedup_key"),
+        CheckConstraint(
+            "status IN ('open','investigating','resolved','false_positive')",
+            name="ck_security_alerts_status",
+        ),
+        CheckConstraint(
+            "severity IN ('low','medium','high','critical')",
+            name="ck_security_alerts_severity",
+        ),
+        CheckConstraint(
+            "window_type IN ('sliding','tumbling')",
+            name="ck_security_alerts_window_type",
+        ),
+        CheckConstraint("threshold >= 1", name="ck_security_alerts_threshold"),
+        CheckConstraint("window_seconds >= 1", name="ck_security_alerts_window_seconds"),
+        CheckConstraint("rule_version >= 1", name="ck_security_alerts_rule_version"),
+        CheckConstraint(
+            "jsonb_typeof(event_ids) = 'array'",
+            name="ck_security_alerts_event_ids_array",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(line_numbers) = 'array'",
+            name="ck_security_alerts_line_numbers_array",
+        ),
+        Index("ix_security_alerts_rule_id", "rule_id"),
+        Index("ix_security_alerts_severity", "severity"),
+        Index("ix_security_alerts_source_id", "source_id"),
         Index("ix_security_alerts_status", "status"),
-        Index("ix_security_alerts_log_event_id", "log_event_id"),
+    )
+
+
+class AlertNote(Base):
+    """Analyst note recorded with a security alert status transition."""
+
+    __tablename__ = "alert_notes"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    alert_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("security_alerts.id", ondelete="CASCADE"), nullable=False
+    )
+    actor: Mapped[str] = mapped_column(String(200), nullable=False)
+    note: Mapped[str] = mapped_column(Text, nullable=False)
+    from_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    to_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "from_status IN ('open','investigating','resolved','false_positive')",
+            name="ck_alert_notes_from_status",
+        ),
+        CheckConstraint(
+            "to_status IN ('open','investigating','resolved','false_positive')",
+            name="ck_alert_notes_to_status",
+        ),
+        CheckConstraint("length(note) > 0", name="ck_alert_notes_note"),
+        Index("ix_alert_notes_alert_id", "alert_id"),
     )
 
 

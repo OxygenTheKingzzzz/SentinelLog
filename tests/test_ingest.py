@@ -16,6 +16,7 @@ from sentinellog.models import (
     DetectionRule,
     IngestionError,
     LogEvent,
+    LogSource,
     SecurityAlert,
 )
 from sentinellog.normalization.storage import dedup_key, quality_report, search_events
@@ -273,3 +274,27 @@ def test_cli_bundled_import(db):
     assert code_again == 0
     total = db.scalar(select(func.count()).select_from(LogEvent))
     assert total == 2000
+    db.expire_all()
+    source = db.scalar(select(LogSource).where(LogSource.name == "cli-linux"))
+    assert source is not None
+    assert source.source_year == 2005
+    header = db.scalar(
+        select(LogEvent).where(LogEvent.source_id == source.id, LogEvent.line_number == 1)
+    )
+    assert header is not None
+    assert header.event_timestamp == datetime(2005, 6, 14, 15, 16, 1, tzinfo=UTC)
+    # The FTP banner clock is one second earlier and the text contains 2005.
+    # The stored timestamp follows the syslog header plus the configured year.
+    banner = db.scalar(
+        select(LogEvent).where(LogEvent.source_id == source.id, LogEvent.line_number == 263)
+    )
+    assert banner is not None
+    assert "2005" in banner.content
+    assert "13:16:30" in banner.content
+    assert banner.event_timestamp == datetime(2005, 6, 22, 13, 16, 31, tzinfo=UTC)
+    audit = db.scalar(
+        select(LogEvent).where(LogEvent.source_id == source.id, LogEvent.line_number == 1986)
+    )
+    assert audit is not None
+    assert "1122475266" in audit.content
+    assert audit.event_timestamp == datetime(2005, 7, 27, 14, 41, 59, tzinfo=UTC)

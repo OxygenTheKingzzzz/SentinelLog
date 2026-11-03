@@ -1,14 +1,9 @@
-"""Detection is deferred. The detection_rules table is intentionally unused in milestone 1."""
+"""Rule-based detection over stored log events.
 
-from fastapi import APIRouter
+Findings are analyst-priority alerts on unlabeled logs. They are not confirmed
+compromise. ML, incidents, reports, and live collection stay unimplemented.
+"""
 
-router = APIRouter(prefix="/detection", tags=["detection"])
+from sentinellog.detection.routes import alerts_router, detection_router, rules_router
 
-
-@router.get("/status")
-def detection_status() -> dict[str, object]:
-    return {
-        "module": "detection",
-        "implemented": False,
-        "detail": "Rule evaluation is deferred. detection_rules exists and is not seeded.",
-    }
+__all__ = ["alerts_router", "detection_router", "rules_router"]

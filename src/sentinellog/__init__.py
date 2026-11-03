@@ -1,3 +1,3 @@
-"""SentinelLog milestone 1: parse, store, and search Linux syslog."""
+"""SentinelLog: parse, store, and run rule-based detection on Linux syslog."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

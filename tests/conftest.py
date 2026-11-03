@@ -22,6 +22,7 @@ from sentinellog.db import reset_engine  # noqa: E402
 
 TABLES = (
     "audit_logs",
+    "alert_notes",
     "investigation_events",
     "investigations",
     "security_alerts",

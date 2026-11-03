@@ -74,7 +74,10 @@ def test_api_ingests_real_files_and_dedups(client):
     health = client.get("/health")
     assert health.status_code == 200
     assert health.json() == {"status": "ok"}
-    for path in ("/detection", "/ml", "/incidents", "/reports", "/live"):
+    detection = client.get("/api/v1/detection/status")
+    assert detection.status_code == 200
+    assert detection.json()["implemented"] is True
+    for path in ("/ml", "/incidents", "/reports", "/live"):
         status = client.get(f"/api/v1{path}/status")
         assert status.status_code == 200
         assert status.json()["implemented"] is False
