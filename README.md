@@ -8,6 +8,16 @@ A longer map of the system is in `/cursor/stores/self/docs/delivery.md`.
 
 Python 3.12 (this machine used 3.12.3; the package requires `>=3.12`) and Node.js 22 (this machine used 22.23.4). PostgreSQL 16.
 
+Unpack the archive and start the sample from the repo root:
+
+```bash
+bash scripts/run-local.sh
+```
+
+That command creates `.env` and a virtualenv, starts Postgres with Docker when it is installed, loads Linux_2k, fits the anomaly model and the risk bands, then serves the API on http://127.0.0.1:8000 and the dashboard on http://127.0.0.1:5173. Ctrl-C stops those two processes. The BGL and HDFS corpora are not in the archive. Their measured results are already in `src/sentinellog/risk/published_results.json` and `src/sentinellog/risk/realistic_results.json`.
+
+Without Docker, create the `sentinellog` role and database first. The script prints those commands if it cannot connect.
+
 ### Postgres with Docker
 
 `docker-compose.yml` starts Postgres 16 and creates the `sentinellog` database. It does not create the test database.
