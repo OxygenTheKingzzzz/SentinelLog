@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     anomaly_artifact_dir: str = "var/anomaly-models"
     # Colon-separated absolute directories. Empty means no live path can be authorized.
     live_allow_roots: str = ""
+    # Comma-separated browser origins. Empty means no cross-origin browser access.
+    cors_origins: str = "http://127.0.0.1:5173,http://localhost:5173"
+    # In-process limit for import, detection, anomaly train/score, and PDF export.
+    rate_limit_requests: int = 30
+    rate_limit_window_seconds: int = 60
+    debug: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -43,6 +49,24 @@ class Settings(BaseSettings):
         if value < 1:
             raise ValueError("max_upload_bytes must be positive")
         return value
+
+    @field_validator("cors_origins")
+    @classmethod
+    def cors_origins_are_explicit(cls, value: str) -> str:
+        parts = [part.strip() for part in value.split(",") if part.strip()]
+        if any(part == "*" for part in parts):
+            raise ValueError("cors_origins cannot be *")
+        return ",".join(parts)
+
+    @field_validator("rate_limit_requests", "rate_limit_window_seconds")
+    @classmethod
+    def rate_limit_positive(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("rate limit settings must be positive")
+        return value
+
+    def origin_list(self) -> list[str]:
+        return [part.strip() for part in self.cors_origins.split(",") if part.strip()]
 
 
 @lru_cache

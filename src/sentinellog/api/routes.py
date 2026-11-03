@@ -324,6 +324,10 @@ def public_settings(db: Session = Depends(get_db)) -> dict[str, object]:
         "anomaly_artifact_dir": settings.anomaly_artifact_dir,
         "live_collection": True,
         "pdf_export": True,
+        "cors_origins": settings.origin_list(),
+        "rate_limit_requests": settings.rate_limit_requests,
+        "rate_limit_window_seconds": settings.rate_limit_window_seconds,
+        "debug": settings.debug,
         "database": {
             "driver": url.drivername,
             "host": url.host,

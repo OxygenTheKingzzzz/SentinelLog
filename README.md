@@ -108,7 +108,9 @@ Uploads are size-limited (`MAX_UPLOAD_BYTES`, default 32 MiB), must be UTF-8 tex
 
 `GET /api/v1/detection/status` reports that the rule engine is implemented. `GET /api/v1/ml/status` reports that anomaly scoring is implemented and that the dataset has no ground truth (`metrics` is null). Analyst workspaces live at `/api/v1/investigations`. `GET /api/v1/live/status` reports that file tailing is implemented. `GET /api/v1/reports/status` reports that investigation JSON and PDF export is implemented. `/incidents` still reports that confirmed incidents are not implemented. Anomaly scores are stored in `anomaly_scores`, not in `security_alerts`. Live lines are stored with `origin=live_file` on their own source. They are not inserted into `linux-2k`.
 
-The dashboard is `web/`. How to run it is in `/cursor/stores/self/docs/milestone-4.md`. How to authorize a live file is in `/cursor/stores/self/docs/milestone-5.md`.
+The dashboard is `web/`. How to run it is in `/cursor/stores/self/docs/milestone-4.md`. How to authorize a live file is in `/cursor/stores/self/docs/milestone-5.md`. Investigation export is in `/cursor/stores/self/docs/milestone-6.md`. Request limits, CORS, and error handling are in `/cursor/stores/self/docs/milestone-7.md`.
+
+`CORS_ORIGINS` is a comma-separated list and defaults to `http://127.0.0.1:5173` and `http://localhost:5173`. Import, detection, anomaly train/score, and PDF export are rate-limited in process (`RATE_LIMIT_REQUESTS` per `RATE_LIMIT_WINDOW_SECONDS`, default 30 per 60 seconds). A client that exceeds the limit gets HTTP 429 JSON. `DEBUG=false` makes unhandled errors JSON with no stack trace. Copy `.env.example` to `.env`; `.env` is gitignored.
 
 ## Layout
 

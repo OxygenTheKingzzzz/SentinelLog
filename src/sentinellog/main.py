@@ -18,6 +18,7 @@ from sentinellog.jsonlog import configure_logging
 from sentinellog.live import router as live_router
 from sentinellog.live.supervisor import supervisor_loop
 from sentinellog.ml import router as ml_router
+from sentinellog.ratelimit import WindowLimiter, bucket_for
 from sentinellog.reports import router as reports_router
 
 
@@ -45,12 +46,35 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="SentinelLog",
         version=__version__,
-        summary="Milestone 6: investigation JSON and PDF reports over stored evidence.",
+        debug=settings.debug,
+        summary="Milestone 7: configurable limits, CORS, and JSON errors.",
         lifespan=lifespan,
     )
+    limiter = WindowLimiter()
+
+    @app.middleware("http")
+    async def limit_expensive(request, call_next):
+        bucket = bucket_for(request.method, request.url.path)
+        if bucket is not None:
+            current = get_settings()
+            host = request.client.host if request.client else "unknown"
+            allowed = limiter.allow(
+                host,
+                bucket,
+                current.rate_limit_requests,
+                current.rate_limit_window_seconds,
+            )
+            if not allowed:
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "rate limit exceeded"},
+                    headers={"Retry-After": str(current.rate_limit_window_seconds)},
+                )
+        return await call_next(request)
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+        allow_origins=settings.origin_list(),
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -68,6 +92,12 @@ def create_app() -> FastAPI:
     @app.exception_handler(FileRejected)
     async def file_rejected(_request, exc: FileRejected) -> JSONResponse:
         return JSONResponse(status_code=400, content={"detail": str(exc)})
+
+    if not settings.debug:
+
+        @app.exception_handler(Exception)
+        async def unhandled(_request, _exc: Exception) -> JSONResponse:
+            return JSONResponse(status_code=500, content={"detail": "internal server error"})
 
     return app
 

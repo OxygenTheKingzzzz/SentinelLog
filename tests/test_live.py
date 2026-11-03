@@ -40,6 +40,14 @@ def test_paths_reject_traversal_and_escape(tmp_path):
     link.symlink_to(outside)
     with pytest.raises(PathRejected):
         resolve_allowed_path(str(link), roots)
+    outside_dir = tmp_path / "secret-dir"
+    outside_dir.mkdir()
+    hidden = outside_dir / "hidden.log"
+    hidden.write_text("hidden\n")
+    link_dir = allowed / "linked"
+    link_dir.symlink_to(outside_dir)
+    with pytest.raises(PathRejected):
+        resolve_allowed_path(str(link_dir / "hidden.log"), roots)
     inside = allowed / "app.log"
     inside.write_text("")
     assert resolve_allowed_path(str(inside), roots) == inside.resolve()

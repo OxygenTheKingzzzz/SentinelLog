@@ -1,7 +1,7 @@
 [project]
 name = "sentinellog"
-version = "0.6.0"
-description = "Local SOC / Linux log intelligence platform. Milestone 6 adds investigation JSON and PDF reports."
+version = "0.7.0"
+description = "Local SOC / Linux log intelligence platform. Milestone 7 closes the remaining request limits and error handling."
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.14",

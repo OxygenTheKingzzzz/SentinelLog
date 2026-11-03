@@ -114,6 +114,12 @@ def test_api_rejects_unsafe_uploads(client, monkeypatch):
         files={"file": ("x.log", b"\x00abc", "text/plain")},
     )
     assert nul.status_code == 400
+    binary = client.post(
+        f"/api/v1/sources/{source_id}/ingest/raw",
+        files={"file": ("x.log", b"\xff\xfe not utf-8", "text/plain")},
+    )
+    assert binary.status_code == 400
+    assert binary.json()["detail"] == "file is not valid UTF-8"
     executable = client.post(
         f"/api/v1/sources/{source_id}/ingest/raw",
         files={"file": ("payload.exe", b"hello", "application/octet-stream")},
