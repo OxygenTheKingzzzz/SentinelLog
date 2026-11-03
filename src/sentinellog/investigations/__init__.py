@@ -1,4 +1,4 @@
-"""Analyst investigations over stored alerts and events. No PDF export."""
+"""Analyst investigations over stored alerts and events, with JSON and PDF export."""
 
 from sentinellog.investigations.routes import router
 

@@ -1,6 +1,7 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -15,6 +16,7 @@ from sentinellog.investigations.service import (
     evidence_bundle,
     investigation_detail,
     list_investigations,
+    pdf_export,
     set_status,
 )
 
@@ -156,8 +158,30 @@ def get_graph(investigation_id: UUID, db: Session = Depends(get_db)) -> dict[str
 
 
 @router.get("/{investigation_id}/evidence")
-def get_evidence(investigation_id: UUID, db: Session = Depends(get_db)) -> dict[str, object]:
+def get_evidence(
+    investigation_id: UUID,
+    actor: str = Query(default="dashboard", min_length=1, max_length=200),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
     try:
-        return evidence_bundle(db, investigation_id)
+        return evidence_bundle(db, investigation_id, actor=actor.strip(), record=True)
     except InvestigationNotFound:
         raise HTTPException(status_code=404, detail="investigation not found") from None
+
+
+@router.get("/{investigation_id}/report.pdf")
+def get_pdf(
+    investigation_id: UUID,
+    actor: str = Query(default="dashboard", min_length=1, max_length=200),
+    db: Session = Depends(get_db),
+) -> Response:
+    try:
+        payload = pdf_export(db, investigation_id, actor=actor.strip())
+    except InvestigationNotFound:
+        raise HTTPException(status_code=404, detail="investigation not found") from None
+    filename = f"investigation-{investigation_id}.pdf"
+    return Response(
+        content=payload,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

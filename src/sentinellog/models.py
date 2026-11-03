@@ -3,7 +3,7 @@
 Milestone 1 writes log sources, ingestion jobs, templates, events, parse errors,
 and audit rows. Milestone 2 evaluates detection_rules and writes security_alerts
 from stored log_events. Milestone 3 writes anomaly_models and anomaly_scores.
-Those scores are not rule alerts and are not ground truth. investigations stay empty.
+Those scores are not rule alerts and are not ground truth. Investigations group stored evidence.
 """
 
 import uuid

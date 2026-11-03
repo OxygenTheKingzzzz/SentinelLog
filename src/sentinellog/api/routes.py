@@ -323,7 +323,7 @@ def public_settings(db: Session = Depends(get_db)) -> dict[str, object]:
         "source_year": settings.source_year,
         "anomaly_artifact_dir": settings.anomaly_artifact_dir,
         "live_collection": True,
-        "pdf_export": False,
+        "pdf_export": True,
         "database": {
             "driver": url.drivername,
             "host": url.host,

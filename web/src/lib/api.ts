@@ -255,6 +255,7 @@ export interface InvestigationEvent {
   component: string;
   event_id: string | null;
   content: string;
+  raw_line: string;
   source_ip: string | null;
   username: string | null;
 }
@@ -265,12 +266,35 @@ export interface InvestigationAlert {
   severity: string;
   status: string;
   rule_id: string;
+  rule_name: string | null;
+  rule_version: number;
+  threshold: number;
+  window_seconds: number;
+  window_type: string;
   source_address: string | null;
   explanation: string;
   event_ids: string[];
   line_numbers: number[];
   first_event_at: string | null;
   last_event_at: string | null;
+  confirmed_compromise: boolean;
+  label: string;
+}
+
+export interface AnomalyWindow {
+  id: string;
+  model_id: string;
+  model_version: number;
+  window_start: string;
+  window_end: string;
+  event_count: number;
+  isolation_score: number;
+  baseline_score: number;
+  flagged_isolation: boolean;
+  flagged_baseline: boolean;
+  confirmed_compromise: boolean;
+  label: string;
+  disclaimer: string;
 }
 
 export interface InvestigationNote {
@@ -288,6 +312,7 @@ export interface InvestigationDetail {
   created_at: string;
   updated_at: string;
   alerts: InvestigationAlert[];
+  anomaly_windows: AnomalyWindow[];
   events: InvestigationEvent[];
   notes: InvestigationNote[];
 }
@@ -297,9 +322,25 @@ export interface EvidenceBundle {
   pdf: boolean;
   label: string;
   investigation: { id: string; title: string; status: string; summary: string | null };
-  observations: InvestigationEvent[];
-  rule_hypotheses: InvestigationAlert[];
-  analyst_notes: InvestigationNote[];
+  observations: {
+    section: string;
+    label: string;
+    description: string;
+    timeline: InvestigationEvent[];
+  };
+  automated_hypotheses: {
+    section: string;
+    label: string;
+    description: string;
+    rule_alerts: InvestigationAlert[];
+    anomaly_windows: AnomalyWindow[];
+  };
+  analyst_confirmed_findings: {
+    section: string;
+    label: string;
+    description: string;
+    notes: InvestigationNote[];
+  };
 }
 
 export interface GraphPayload {
@@ -467,6 +508,26 @@ export const api = {
     }),
   graph: (id: string) => request<GraphPayload>(`/api/v1/investigations/${id}/graph`),
   evidence: (id: string) => request<EvidenceBundle>(`/api/v1/investigations/${id}/evidence`),
+  downloadInvestigationPdf: async (id: string) => {
+    const response = await fetch(`/api/v1/investigations/${id}/report.pdf`);
+    if (!response.ok) {
+      let detail = response.statusText;
+      try {
+        const body = (await response.json()) as { detail?: unknown };
+        if (typeof body.detail === "string") detail = body.detail;
+      } catch {
+        /* keep the status text */
+      }
+      throw new ApiError(response.status, detail);
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `investigation-${id}.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
+  },
   mlStatus: () =>
     request<{ ground_truth: boolean; metrics: null; metrics_note: string; detail: string }>(
       "/api/v1/ml/status",

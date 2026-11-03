@@ -1,4 +1,4 @@
-"""Investigation workspace over stored alerts and events. No PDF export."""
+"""Investigation workspace over stored alerts and events, plus JSON and PDF export."""
 
 from uuid import UUID
 
@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from sentinellog.clock import utcnow
+from sentinellog.investigations.report import SECTIONS, build_report, render_pdf
 from sentinellog.models import (
     AuditLog,
     Investigation,
@@ -249,106 +250,81 @@ def list_investigations(session: Session) -> list[dict[str, object]]:
 
 def investigation_detail(session: Session, investigation_id: UUID) -> dict[str, object]:
     row = _require(session, investigation_id)
-    alert_ids = list(
-        session.scalars(
-            select(InvestigationAlert.alert_id).where(InvestigationAlert.investigation_id == row.id)
-        ).all()
-    )
-    alerts = []
-    if alert_ids:
-        alerts = list(
-            session.scalars(select(SecurityAlert).where(SecurityAlert.id.in_(alert_ids))).all()
-        )
-    event_ids = list(
-        session.scalars(
-            select(InvestigationEvent.log_event_id).where(
-                InvestigationEvent.investigation_id == row.id
-            )
-        ).all()
-    )
-    events = []
-    if event_ids:
-        events = list(
-            session.scalars(
-                select(LogEvent)
-                .where(LogEvent.id.in_(event_ids))
-                .order_by(LogEvent.event_timestamp, LogEvent.line_number)
-            ).all()
-        )
-    notes = session.scalars(
-        select(InvestigationNote)
-        .where(InvestigationNote.investigation_id == row.id)
-        .order_by(InvestigationNote.created_at)
-    ).all()
+    report = build_report(session, row)
+    hypotheses = report["automated_hypotheses"]
+    observations = report["observations"]
+    findings = report["analyst_confirmed_findings"]
+    assert isinstance(hypotheses, dict)
+    assert isinstance(observations, dict)
+    assert isinstance(findings, dict)
+    investigation = report["investigation"]
+    assert isinstance(investigation, dict)
     return {
-        "id": row.id,
-        "title": row.title,
-        "status": row.status,
-        "summary": row.summary,
-        "created_at": row.created_at,
-        "updated_at": row.updated_at,
-        "alerts": [
-            {
-                "id": alert.id,
-                "title": alert.title,
-                "severity": alert.severity,
-                "status": alert.status,
-                "rule_id": alert.rule_id,
-                "rule_version": alert.rule_version,
-                "source_address": alert.source_address,
-                "explanation": alert.explanation,
-                "event_ids": [str(item) for item in alert.event_ids],
-                "line_numbers": [int(item) for item in alert.line_numbers],
-                "first_event_at": alert.first_event_at,
-                "last_event_at": alert.last_event_at,
-            }
-            for alert in alerts
-        ],
-        "events": [
-            {
-                "id": event.id,
-                "line_number": event.line_number,
-                "event_timestamp": event.event_timestamp,
-                "hostname": event.hostname,
-                "component": event.component,
-                "event_id": event.event_id,
-                "content": event.content,
-                "source_ip": event.source_ip,
-                "username": event.username,
-            }
-            for event in events
-        ],
-        "notes": [
-            {
-                "id": note.id,
-                "actor": note.actor,
-                "body": note.body,
-                "created_at": note.created_at,
-            }
-            for note in notes
-        ],
+        "id": investigation["id"],
+        "title": investigation["title"],
+        "status": investigation["status"],
+        "summary": investigation["summary"],
+        "created_at": investigation["created_at"],
+        "updated_at": investigation["updated_at"],
+        "alerts": hypotheses["rule_alerts"],
+        "anomaly_windows": hypotheses["anomaly_windows"],
+        "events": observations["timeline"],
+        "notes": findings["notes"],
     }
 
 
-def evidence_bundle(session: Session, investigation_id: UUID) -> dict[str, object]:
-    detail = investigation_detail(session, investigation_id)
-    return {
-        "kind": "json_evidence_bundle",
-        "pdf": False,
-        "label": (
-            "Observations are stored log lines. Rule hypotheses are security_alerts, "
-            "not confirmed incidents. Analyst notes are comments, not findings."
-        ),
-        "investigation": {
-            "id": str(detail["id"]),
-            "title": detail["title"],
-            "status": detail["status"],
-            "summary": detail["summary"],
+def evidence_bundle(
+    session: Session,
+    investigation_id: UUID,
+    *,
+    actor: str,
+    record: bool,
+) -> dict[str, object]:
+    row = _require(session, investigation_id)
+    report = build_report(session, row)
+    if record:
+        _record_export(session, row, actor=actor, fmt="json", report=report)
+        session.commit()
+    return report
+
+
+def pdf_export(session: Session, investigation_id: UUID, *, actor: str) -> bytes:
+    row = _require(session, investigation_id)
+    report = build_report(session, row)
+    payload = render_pdf(report)
+    _record_export(session, row, actor=actor, fmt="pdf", report=report)
+    session.commit()
+    return payload
+
+
+def _record_export(
+    session: Session,
+    row: Investigation,
+    *,
+    actor: str,
+    fmt: str,
+    report: dict[str, object],
+) -> None:
+    hypotheses = report["automated_hypotheses"]
+    observations = report["observations"]
+    findings = report["analyst_confirmed_findings"]
+    assert isinstance(hypotheses, dict)
+    assert isinstance(observations, dict)
+    assert isinstance(findings, dict)
+    _audit(
+        session,
+        actor=actor,
+        action="investigation.export",
+        entity_id=str(row.id),
+        details={
+            "format": fmt,
+            "sections": list(SECTIONS),
+            "observations": len(observations["timeline"]),  # type: ignore[arg-type]
+            "rule_alerts": len(hypotheses["rule_alerts"]),  # type: ignore[arg-type]
+            "anomaly_windows": len(hypotheses["anomaly_windows"]),  # type: ignore[arg-type]
+            "analyst_notes": len(findings["notes"]),  # type: ignore[arg-type]
         },
-        "observations": detail["events"],
-        "rule_hypotheses": detail["alerts"],
-        "analyst_notes": detail["notes"],
-    }
+    )
 
 
 def correlation_graph(session: Session, investigation_id: UUID) -> dict[str, object]:

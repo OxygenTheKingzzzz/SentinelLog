@@ -118,6 +118,16 @@ export function InvestigationsPage() {
       await client.invalidateQueries({ queryKey: ["investigations"] });
     },
   });
+  const attach = useMutation({
+    mutationFn: () =>
+      api.linkInvestigation(active ?? "", { alert_ids: alertIds, event_ids: eventIds }),
+    onSuccess: async () => {
+      clearPicks();
+      await client.invalidateQueries({ queryKey: ["investigation", active] });
+      await client.invalidateQueries({ queryKey: ["graph", active] });
+      await client.invalidateQueries({ queryKey: ["investigations"] });
+    },
+  });
 
   async function downloadEvidence() {
     if (!active) return;
@@ -127,6 +137,11 @@ export function InvestigationsPage() {
       JSON.stringify(bundle, null, 2),
       "application/json",
     );
+  }
+
+  async function downloadPdf() {
+    if (!active) return;
+    await api.downloadInvestigationPdf(active);
   }
 
   return (
@@ -185,17 +200,27 @@ export function InvestigationsPage() {
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-sm">{detail.data.title}</h2>
               <Badge value={detail.data.status} />
-              <Button type="button" variant="outline" onClick={() => void downloadEvidence()}>
-                JSON evidence bundle
+              <Button type="button" variant="outline" data-testid="export-json" onClick={() => void downloadEvidence()}>
+                Export JSON
               </Button>
+              <Button type="button" variant="outline" data-testid="export-pdf" onClick={() => void downloadPdf()}>
+                Export PDF
+              </Button>
+              {alertIds.length + eventIds.length > 0 ? (
+                <Button type="button" variant="outline" disabled={attach.isPending} onClick={() => attach.mutate()}>
+                  Add selected evidence ({alertIds.length + eventIds.length})
+                </Button>
+              ) : null}
             </div>
             <p className="text-[11px] text-mute">
-              The bundle separates observations, rule hypotheses, and analyst notes. PDF export is not in this build.
+              Observations are stored log lines. Automated hypotheses are rule alerts and anomaly windows, and each one is not a confirmed compromise. Analyst-confirmed findings are only notes the analyst wrote.
             </p>
+            {attach.isError ? <ErrorNote error={attach.error} /> : null}
             {detail.data.summary ? <p>{detail.data.summary}</p> : null}
             <div className="grid gap-2 lg:grid-cols-3">
               <section className="rounded-lg border border-line bg-panel p-2">
                 <h3 className="text-[11px] uppercase tracking-wider text-mute">Observations</h3>
+                <p className="text-[11px] text-mute">Stored log lines and timestamps.</p>
                 <ol className="mt-2 space-y-2">
                   {detail.data.events.map((event) => (
                     <li key={event.id} className="border-t border-line pt-1 text-xs">
@@ -205,26 +230,45 @@ export function InvestigationsPage() {
                       <div className="text-mute">
                         {event.component} {event.event_id ?? ""}
                       </div>
-                      <div>{event.content}</div>
+                      <div>{event.raw_line}</div>
                     </li>
                   ))}
                   {detail.data.events.length === 0 ? <Empty>No linked events.</Empty> : null}
                 </ol>
               </section>
               <section className="rounded-lg border border-line bg-panel p-2">
-                <h3 className="text-[11px] uppercase tracking-wider text-mute">Rule hypotheses</h3>
+                <h3 className="text-[11px] uppercase tracking-wider text-mute">Automated hypotheses</h3>
+                <p className="text-[11px] text-mute">Rule alerts and anomaly windows. Each item is not a confirmed compromise.</p>
                 <ul className="mt-2 space-y-2 text-xs">
                   {detail.data.alerts.map((alert) => (
                     <li key={alert.id} className="border-t border-line pt-1">
                       <Badge value={alert.severity} /> {alert.title}
+                      <div className="font-mono text-[11px] text-mute">
+                        rule {alert.rule_id} version {alert.rule_version} threshold {alert.threshold}
+                      </div>
+                      <div className="text-mute">{alert.label}</div>
                       <div className="text-mute">{alert.explanation}</div>
                     </li>
                   ))}
-                  {detail.data.alerts.length === 0 ? <Empty>No linked alerts.</Empty> : null}
+                  {detail.data.anomaly_windows.map((window) => (
+                    <li key={window.id} className="border-t border-line pt-1">
+                      <div className="font-mono text-[11px]">
+                        {formatWhen(window.window_start)} – {formatWhen(window.window_end)} UTC
+                      </div>
+                      <div className="text-mute">
+                        isolation {window.isolation_score} · baseline {window.baseline_score}
+                      </div>
+                      <div className="text-mute">{window.label}</div>
+                    </li>
+                  ))}
+                  {detail.data.alerts.length === 0 && detail.data.anomaly_windows.length === 0 ? (
+                    <Empty>No linked alerts or overlapping anomaly windows.</Empty>
+                  ) : null}
                 </ul>
               </section>
               <section className="rounded-lg border border-line bg-panel p-2">
-                <h3 className="text-[11px] uppercase tracking-wider text-mute">Analyst notes</h3>
+                <h3 className="text-[11px] uppercase tracking-wider text-mute">Analyst-confirmed findings</h3>
+                <p className="text-[11px] text-mute">Only notes the analyst wrote.</p>
                 <ul className="mt-2 space-y-2 text-xs">
                   {detail.data.notes.map((item) => (
                     <li key={item.id} className="border-t border-line pt-1">

@@ -45,7 +45,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="SentinelLog",
         version=__version__,
-        summary="Milestone 5: optional read-only tail of authorized local files.",
+        summary="Milestone 6: investigation JSON and PDF reports over stored evidence.",
         lifespan=lifespan,
     )
     app.add_middleware(

@@ -70,8 +70,8 @@ def test_overview_facets_and_settings_follow_stored_rows(client):
     settings = client.get("/api/v1/settings")
     assert settings.status_code == 200, settings.text
     payload = settings.json()
-    assert payload["version"] == "0.5.0"
-    assert payload["pdf_export"] is False
+    assert payload["version"] == "0.6.0"
+    assert payload["pdf_export"] is True
     assert payload["live_collection"] is True
     assert "password" not in payload["database"]
     assert "sentinellog" not in str(payload["database"].get("password", ""))
@@ -111,12 +111,18 @@ def test_investigation_evidence_uses_real_links(client):
     evidence = client.get(f"/api/v1/investigations/{investigation_id}/evidence")
     assert evidence.status_code == 200, evidence.text
     bundle = evidence.json()
-    assert bundle["pdf"] is False
-    assert bundle["kind"] == "json_evidence_bundle"
-    assert {key for key in ("observations", "rule_hypotheses", "analyst_notes")} <= bundle.keys()
-    assert bundle["observations"][0]["line_number"] == line_number
-    assert bundle["rule_hypotheses"] == []
-    assert bundle["analyst_notes"][0]["body"] == "opened while checking the workspace"
+    assert bundle["pdf"] is True
+    assert bundle["kind"] == "investigation_report"
+    assert bundle["observations"]["section"] == "observations"
+    assert bundle["observations"]["timeline"][0]["line_number"] == line_number
+    assert bundle["observations"]["timeline"][0]["raw_line"]
+    assert bundle["automated_hypotheses"]["section"] == "automated_hypotheses"
+    assert bundle["automated_hypotheses"]["rule_alerts"] == []
+    assert bundle["automated_hypotheses"]["anomaly_windows"] == []
+    findings = bundle["analyst_confirmed_findings"]
+    assert findings["section"] == "analyst_confirmed_findings"
+    assert findings["notes"][0]["body"] == "opened while checking the workspace"
+    assert "was compromised" not in evidence.text
 
     graph = client.get(f"/api/v1/investigations/{investigation_id}/graph")
     assert graph.status_code == 200, graph.text
