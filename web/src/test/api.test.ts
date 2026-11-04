@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { api, queryString } from "@/lib/api";
+import { api, apiBase, apiUrl, queryString } from "@/lib/api";
 
 describe("api client", () => {
   it("drops empty query values", () => {
@@ -18,6 +18,21 @@ describe("api client", () => {
       expect.objectContaining({ headers: expect.any(Headers) }),
     );
     vi.unstubAllGlobals();
+  });
+
+  it("keeps same-origin paths when no API origin is configured", () => {
+    vi.stubEnv("VITE_API_BASE_URL", "");
+    expect(apiBase()).toBe("");
+    expect(apiUrl("/health")).toBe("/health");
+    vi.unstubAllEnvs();
+  });
+
+  it("uses a public API origin without credentials", () => {
+    vi.stubEnv("VITE_API_BASE_URL", "https://api.example.test/");
+    expect(apiUrl("/api/v1/overview")).toBe("https://api.example.test/api/v1/overview");
+    vi.stubEnv("VITE_API_BASE_URL", "https://user:secret@api.example.test");
+    expect(() => apiBase()).toThrow(/credentials/);
+    vi.unstubAllEnvs();
   });
 
   it("surfaces API error detail", async () => {

@@ -47,7 +47,8 @@ Copy `.env.example` to `.env`. Do not commit `.env`. The example file sets:
 - `SOURCE_YEAR` — optional default only when a new source omits a year. Leave it unset for arbitrary sources. It is not how Linux_2k gets 2005.
 - `MAX_UPLOAD_BYTES` — default 33554432
 - `LOG_LEVEL` — `INFO`
-- `CORS_ORIGINS` — `http://127.0.0.1:5173,http://localhost:5173`
+- `CORS_ORIGINS` — `http://127.0.0.1:5173,http://localhost:5173`. Add the public dashboard origin when the UI is hosted elsewhere. A wildcard is rejected.
+- `VITE_API_BASE_URL` — optional public API origin for the dashboard, set in `web/.env` (see `web/.env.example`). Empty keeps the Vite proxy. It is not a secret and must not contain credentials.
 - `RATE_LIMIT_REQUESTS` — 30
 - `RATE_LIMIT_WINDOW_SECONDS` — 60
 - `DEBUG` — `false`

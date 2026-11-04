@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { api } from "@/lib/api";
+import { api, apiUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useSelection } from "@/store/selection";
 import { Select } from "@/components/ui/input";
@@ -22,7 +22,7 @@ export function Shell() {
   const client = useQueryClient();
   const sources = useQuery({ queryKey: ["sources"], queryFn: api.sources });
   useEffect(() => {
-    const stream = new EventSource("/api/v1/live/stream");
+    const stream = new EventSource(apiUrl("/api/v1/live/stream"));
     stream.onmessage = () => {
       void client.invalidateQueries({ queryKey: ["overview"] });
       void client.invalidateQueries({ queryKey: ["events"] });

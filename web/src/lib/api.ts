@@ -20,13 +20,43 @@ export function queryString(params?: Record<string, QueryValue>): string {
   return text ? `?${text}` : "";
 }
 
+/** Public API origin. Empty keeps same-origin requests and the Vite dev proxy. */
+export function apiBase(): string {
+  const configured = import.meta.env.VITE_API_BASE_URL;
+  const raw = typeof configured === "string" ? configured.trim() : "";
+  if (!raw) return "";
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error("VITE_API_BASE_URL must be an absolute http(s) origin");
+  }
+  if (url.username || url.password) {
+    throw new Error("VITE_API_BASE_URL must not include credentials");
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error("VITE_API_BASE_URL must be an http(s) origin");
+  }
+  if (url.search || url.hash || (url.pathname !== "/" && url.pathname !== "")) {
+    throw new Error("VITE_API_BASE_URL must be an origin, not a path or query");
+  }
+  return url.origin;
+}
+
+export function apiUrl(path: string): string {
+  if (!path.startsWith("/")) {
+    throw new Error("API paths must start with /");
+  }
+  return `${apiBase()}${path}`;
+}
+
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Accept", "application/json");
   if (init?.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  const response = await fetch(path, { ...init, headers });
+  const response = await fetch(apiUrl(path), { ...init, headers });
   if (!response.ok) {
     let detail = response.statusText;
     try {
@@ -509,7 +539,7 @@ export const api = {
   graph: (id: string) => request<GraphPayload>(`/api/v1/investigations/${id}/graph`),
   evidence: (id: string) => request<EvidenceBundle>(`/api/v1/investigations/${id}/evidence`),
   downloadInvestigationPdf: async (id: string) => {
-    const response = await fetch(`/api/v1/investigations/${id}/report.pdf`);
+    const response = await fetch(apiUrl(`/api/v1/investigations/${id}/report.pdf`));
     if (!response.ok) {
       let detail = response.statusText;
       try {
