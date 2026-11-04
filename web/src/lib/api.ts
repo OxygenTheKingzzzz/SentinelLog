@@ -53,6 +53,8 @@ export function apiUrl(path: string): string {
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Accept", "application/json");
+  const token = sessionStorage.getItem("sentinellog-admin-token");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
   if (init?.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }

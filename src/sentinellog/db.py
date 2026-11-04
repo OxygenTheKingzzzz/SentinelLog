@@ -14,7 +14,18 @@ _session_factory: sessionmaker[Session] | None = None
 def get_engine() -> Engine:
     global _engine, _session_factory
     if _engine is None:
-        _engine = create_engine(get_settings().database_url, pool_pre_ping=True)
+        _engine = create_engine(
+            get_settings().database_url,
+            pool_pre_ping=True,
+            pool_size=5,
+            max_overflow=5,
+            pool_timeout=10,
+            connect_args={
+                "connect_timeout": 10,
+                "options": ("-c statement_timeout=30000 "
+                            "-c idle_in_transaction_session_timeout=30000"),
+            },
+        )
         _session_factory = sessionmaker(bind=_engine, autoflush=False, expire_on_commit=False)
     return _engine
 

@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 30
     rate_limit_window_seconds: int = 60
     debug: bool = False
+    # Public reads are supported; mutations always require this server-side secret.
+    api_admin_token: str = ""
+    request_limit_bytes: int = 35_651_584
+
 
     model_config = SettingsConfigDict(
         env_file=".env",

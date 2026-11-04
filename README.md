@@ -174,3 +174,23 @@ Reviewers can save a verified label with `POST /api/v1/risk/labels` or import `l
 BGL and HDFS numbers in `published_results.json` describe a seeded sample of at most 28,000 examples. Whole template groups are drawn round-robin by class before the split, and each group contributes at most 40 rows, so the test base rate is not the corpus base rate. That file is the rebalanced benchmark.
 
 `python -m sentinellog.risk.realistic <dataset-dir> --out src/sentinellog/risk/realistic_results.json --report docs/realistic-prevalence-evaluation.md` assigns groups to train, validation, and test before sampling, keeps each side's own anomaly rate, and chooses thresholds on validation only. The dashboard lists that run separately from the benchmark. OpenStack supervised models stay unevaluated when the anomalous instances share one normalized template. Thunderbird_2k and Linux stay unevaluated. Binary datasets are scored as normal versus anomaly. That is not four-class LOW/MEDIUM/HIGH/CRITICAL accuracy. Linux bands remain estimated score quantiles.
+
+## Public deployment security
+
+The dashboard permits public reads of shared log data. Uploads and all other mutations
+require `Authorization: Bearer <API_ADMIN_TOKEN>`; configuration, audit, and collector
+metadata are also restricted. Set a long random `API_ADMIN_TOKEN` on the API service.
+Enter it in the dashboard Settings page; it stays in session storage for that tab.
+Clearing the token in Settings removes access. Rotate it in Railway to revoke existing tokens.
+Do not put it in a `VITE_` variable or commit it.
+
+For Railway, `scripts/cloud-start.py` runs migrations using `DATABASE_ADMIN_URL`,
+then starts the API as `sentinel_app`, using `DATABASE_APP_PASSWORD`. The runtime
+role has table read/write access but cannot create schemas, roles, or databases.
+The owner URL and separate password copy are removed from the API process environment.
+Keep Postgres on Railway's private network and keep public TCP proxies disabled.
+
+Request sizes, database connection pools, query durations, and per-process request
+rates are bounded. The rate limiter is not distributed; horizontal scaling needs a
+shared limiter or gateway. Public reads are shared across visitors: this is not
+multi-tenant log storage. These protections do not make confidential uploads private.

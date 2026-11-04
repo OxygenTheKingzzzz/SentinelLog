@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
@@ -6,6 +7,7 @@ import { ErrorNote } from "@/components/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function SettingsPage() {
+  const [token, setToken] = useState("");
   const health = useQuery({ queryKey: ["health"], queryFn: api.health });
   const settings = useQuery({ queryKey: ["settings"], queryFn: api.settings });
   const audit = useQuery({ queryKey: ["audit"], queryFn: () => api.audit(50, 0) });
@@ -13,6 +15,18 @@ export function SettingsPage() {
   return (
     <div className="space-y-3">
       <h1 className="text-sm font-medium">Settings</h1>
+      <form className="space-x-2" onSubmit={(event) => {
+        event.preventDefault();
+        if (token.trim()) sessionStorage.setItem("sentinellog-admin-token", token.trim());
+        else sessionStorage.removeItem("sentinellog-admin-token");
+        window.location.reload();
+      }}>
+        <label>Administrator token <input type="password" autoComplete="off"
+          value={token} onChange={(event) => setToken(event.target.value)}
+          className="border p-1" /></label>
+        <button type="submit">Sign in / clear access</button>
+        <p className="text-xs">Required for uploads and changes. Access lasts for this browser tab.</p>
+      </form>
       <div className="grid gap-2 md:grid-cols-2">
         <Card>
           <CardHeader>

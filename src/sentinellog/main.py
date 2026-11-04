@@ -21,6 +21,7 @@ from sentinellog.ml import router as ml_router
 from sentinellog.ratelimit import WindowLimiter, bucket_for
 from sentinellog.reports import router as reports_router
 from sentinellog.risk import router as risk_router
+from sentinellog.security import SecurityMiddleware
 
 
 def create_app() -> FastAPI:
@@ -73,6 +74,8 @@ def create_app() -> FastAPI:
                 )
         return await call_next(request)
 
+    app.add_middleware(SecurityMiddleware, token=settings.api_admin_token,
+                       max_bytes=settings.request_limit_bytes)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.origin_list(),

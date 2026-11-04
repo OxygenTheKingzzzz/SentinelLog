@@ -34,6 +34,11 @@ class WindowLimiter:
         now = time.monotonic()
         key = (host, bucket)
         with self._lock:
+            if len(self._hits) >= 10000:
+                self._hits = {k: v for k, v in self._hits.items()
+                              if v and now - v[-1] < window_seconds}
+                if key not in self._hits and len(self._hits) >= 10000:
+                    return False
             recent = [stamp for stamp in self._hits.get(key, []) if now - stamp < window_seconds]
             if len(recent) >= limit:
                 self._hits[key] = recent

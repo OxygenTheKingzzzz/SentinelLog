@@ -9,6 +9,7 @@ TEST_DATABASE_URL = os.environ.get(
 )
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 os.environ["LOG_LEVEL"] = "WARNING"
+os.environ["API_ADMIN_TOKEN"] = "integration-test-admin"
 os.environ["SENTINELLOG_LIVE_SUPERVISOR"] = "0"
 os.environ.pop("SOURCE_YEAR", None)
 
@@ -76,5 +77,7 @@ def client(db: Session):
 
     from sentinellog.main import create_app
 
-    with TestClient(create_app()) as test_client:
+    with TestClient(
+        create_app(), headers={"Authorization": "Bearer integration-test-admin"}
+    ) as test_client:
         yield test_client
